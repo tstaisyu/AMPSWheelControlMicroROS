@@ -11,10 +11,10 @@ TEST(M5StackTest, SetupM5stackFunction) {
     MockM5Stack mockM5;
 
     // モックの振る舞いを設定
-    ON_CALL(mockM5, begin()).WillByDefault(testing::Return(true));
+    ON_CALL(mockM5, begin()).WillByDefault(Return(true));
     EXPECT_CALL(mockM5, begin()).Times(1);
-    EXPECT_CALL(mockM5, setTextSize(testing::Eq(2))).Times(1);
-    EXPECT_CALL(mockM5, setCursor(testing::Eq(0), testing::Eq(0))).Times(1);
+    EXPECT_CALL(mockM5, setTextSize(2)).Times(1);
+    EXPECT_CALL(mockM5, setCursor(0, 0)).Times(1);
 
     // setupM5stack() をテスト実行
     setupM5stack();
