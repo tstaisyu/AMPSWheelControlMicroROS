@@ -13,11 +13,7 @@
  * limitations under the License.
  */
 
-#ifdef NATIVE_TEST
-#include "MockM5Stack.h"
-#else
 #include <M5Stack.h>
-#endif
 
 void setupM5stack() {
   M5.begin();

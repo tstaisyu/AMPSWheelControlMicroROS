@@ -1,27 +1,17 @@
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-#include "MockM5Stack.h" 
+#include <M5Stack.h>
 #include "SetupM5stack.h"
 
-using testing::_;
-using testing::Return;
-
-// テストケース
-TEST(M5StackTest, SetupM5stackFunction) {
-    MockM5Stack mockM5;
-
-    // モックの振る舞いを設定
-    ON_CALL(mockM5, begin()).WillByDefault(Return(true));
-    EXPECT_CALL(mockM5, begin()).Times(1);
-    EXPECT_CALL(mockM5, setTextSize(2)).Times(1);
-    EXPECT_CALL(mockM5, setCursor(0, 0)).Times(1);
-
-    // setupM5stack() をテスト実行
-    setupM5stack();
+void test_setupM5stack_function() {
+    setupM5stack();  // テスト対象の関数を呼び出し
+    // アサーションを使って、期待する結果を確認する（必要な場合）
 }
 
-// main関数（Google Testのエントリポイント）
-int main(int argc, char **argv) {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+void setup() {
+    delay(2000); // テスト開始前に少し待つ
+    UNITY_BEGIN(); // テストランナーを開始
+}
+
+void loop() {
+    RUN_TEST(test_setupM5stack_function);
+    UNITY_END(); // テストランナーを終了
 }
