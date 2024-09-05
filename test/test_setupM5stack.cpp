@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "SetupM5stack.h"  // 定義された関数をインクルード
-#include "M5Stack.h"       // M5Stackのヘッダーファイル（もしモックが必要なら）
+#ifndef NATIVE_TEST
+#include "M5Stack.h"
+#endif
+#include "MockM5Stack.h" 
+#include "SetupM5stack.h"
 
 // テストケース
 TEST(M5StackTest, SetupM5stackFunction) {
