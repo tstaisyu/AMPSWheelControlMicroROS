@@ -3,6 +3,9 @@
 #include "MockM5Stack.h" 
 #include "SetupM5stack.h"
 
+using testing::_;
+using testing::Return;
+
 // テストケース
 TEST(M5StackTest, SetupM5stackFunction) {
     MockM5Stack mockM5;
