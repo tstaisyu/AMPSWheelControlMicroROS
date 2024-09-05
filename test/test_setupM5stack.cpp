@@ -3,14 +3,6 @@
 #include "SetupM5stack.h"  // 定義された関数をインクルード
 #include "M5Stack.h"       // M5Stackのヘッダーファイル（もしモックが必要なら）
 
-// Google MockでのM5Stackのモッククラスを定義
-class MockM5Stack : public M5Stack {
-public:
-    MOCK_METHOD(bool, begin, (), (override));
-    MOCK_METHOD(void, setTextSize, (int size), (override));
-    MOCK_METHOD(void, setCursor, (int x, int y), (override));
-};
-
 // テストケース
 TEST(M5StackTest, SetupM5stackFunction) {
     MockM5Stack mockM5;
