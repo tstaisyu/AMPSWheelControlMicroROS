@@ -14,6 +14,7 @@
  */
 
 #include <M5Stack.h>
+#include "SetupM5stack.h"
 
 void setupM5stack() {
   M5.begin();

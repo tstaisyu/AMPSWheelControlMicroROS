@@ -15,6 +15,7 @@
 
 #include <M5Stack.h>
 #include "SetupM5stack.h"
+#include <unity.h>
 
 void test_setupM5stack_function() {
     setupM5stack();  // テスト対象の関数を呼び出し
