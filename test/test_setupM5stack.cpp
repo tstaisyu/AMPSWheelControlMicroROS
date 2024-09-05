@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #ifndef NATIVE_TEST
-#include "M5Stack.h"
+#include <M5Stack.h>
 #endif
 #include "MockM5Stack.h" 
 #include "SetupM5stack.h"
