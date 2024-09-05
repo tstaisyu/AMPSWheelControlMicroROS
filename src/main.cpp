@@ -1,5 +1,5 @@
 #ifdef NATIVE_TEST
-#include "mocks/MockM5Stack.h"
+#include "MockM5Stack.h"
 #else
 #include <M5Stack.h>
 #endif
