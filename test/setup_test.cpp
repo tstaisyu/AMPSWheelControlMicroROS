@@ -1,22 +1,32 @@
-#include <ArduinoFake.h>
-#include <AUnit.h>
-#include "SetupM5stack.h" // 定義された関数をインクルード
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
+#include "SetupM5stack.h"  // 定義された関数をインクルード
+#include "M5Stack.h"       // M5Stackのヘッダーファイル（もしモックが必要なら）
 
-using namespace aunit;
+// Google MockでのM5Stackのモッククラスを定義
+class MockM5Stack : public M5Stack {
+public:
+    MOCK_METHOD(bool, begin, (), (override));
+    MOCK_METHOD(void, setTextSize, (int size), (override));
+    MOCK_METHOD(void, setCursor, (int x, int y), (override));
+};
 
-test(setupM5stackFunction) {
-    ArduinoFakeReset();
+// テストケース
+TEST(M5StackTest, SetupM5stackFunction) {
+    MockM5Stack mockM5;
 
-    // M5Stack関連のメソッドをモック化
-    When(Method(ArduinoFake(M5Stack), begin)).AlwaysReturn(true);
-    When(Method(ArduinoFake(M5Stack), Lcd.setTextSize)).AlwaysReturn();
-    When(Method(ArduinoFake(M5Stack), Lcd.setCursor)).AlwaysReturn();
+    // モックの振る舞いを設定
+    ON_CALL(mockM5, begin()).WillByDefault(testing::Return(true));
+    EXPECT_CALL(mockM5, begin()).Times(1);
+    EXPECT_CALL(mockM5, setTextSize(testing::Eq(2))).Times(1);
+    EXPECT_CALL(mockM5, setCursor(testing::Eq(0), testing::Eq(0))).Times(1);
 
     // setupM5stack() をテスト実行
     setupM5stack();
+}
 
-    // モックの呼び出しが期待通りに行われたか検証
-    Verify(Method(ArduinoFake(M5Stack), begin)).Once();
-    Verify(Method(ArduinoFake(M5Stack), Lcd.setTextSize).Using(2)).Once();
-    Verify(Method(ArduinoFake(M5Stack), Lcd.setCursor).Using(0, 0)).Once();
+// main関数（Google Testのエントリポイント）
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
