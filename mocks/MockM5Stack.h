@@ -1,8 +1,8 @@
 // MockM5Stack.h
 #pragma once
 
-#ifndef M5STACKMOCK_H
-#define M5STACKMOCK_H
+#ifndef MOCKM5STACK_H
+#define MOCKM5STACK_H
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -17,4 +17,4 @@ public:
 
 extern MockM5Stack M5;
 
-#endif // M5STACKMOCK_H
+#endif // MOCKM5STACK_H
