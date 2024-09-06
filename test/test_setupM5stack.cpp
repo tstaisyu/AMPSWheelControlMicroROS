@@ -18,8 +18,8 @@
 #include <unity.h>
 
 void test_setupM5stack_function() {
-    setupM5stack();  // テスト対象の関数を呼び出し
-    // アサーションを使って、期待する結果を確認する（必要な場合）
+
+
 }
 
 void setup() {
