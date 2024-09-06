@@ -15,6 +15,7 @@
 
 #include <M5Stack.h>
 #include "SetupM5stack.h"
+#include "MotorController.h"
 
 void setupM5stack() {
   M5.begin();
@@ -30,4 +31,49 @@ void initializeUART() {
     Serial.println("Setup complete. Ready to read high resolution speed data.");
     initMotor(motorSerial, MOTOR_ID);
     M5.Lcd.print("micro ROS2 M5Stack START\n");    
+}
+
+void initMotor(HardwareSerial& serial, byte motorID) {
+    motorController.sendCommand(motorID, OPERATION_MODE_ADDRESS, MOTOR_SETUP_COMMAND, OPERATION_MODE_SPEED_CONTROL);
+    delay(COMMAND_DELAY);
+    motorController.sendCommand(motorID, EMERGENCY_STOP_ADDRESS, MOTOR_SETUP_COMMAND, DISABLE_EMERGENCY_STOP);
+    delay(COMMAND_DELAY);
+    motorController.sendCommand(motorID, CONTROL_WORD_ADDRESS, MOTOR_ENABLE_COMMAND, ENABLE_MOTOR);
+    delay(COMMAND_DELAY);
+}
+
+void MotorController::sendCommand(byte motorID, uint16_t address, byte command, uint32_t data) {
+    byte packet[] = {motorID, command, highByte(address), lowByte(address), ERROR_BYTE, (byte)(data >> 24), (byte)(data >> 16), (byte)(data >> 8), (byte)data};
+    byte checksum = 0;
+    for (int i = 0; i < sizeof(packet); i++) {
+        checksum += packet[i];
+    }
+    
+    // 条件に基づいて特定のバイトが特定の値の場合にのみパケット全体を表示
+    if ((packet[1] == 0xA4 && packet[3] == 0x77)) {
+        M5.Lcd.setCursor(0, 80);
+        M5.Lcd.print("Packet: ");
+        for (int i = 0; i < sizeof(packet); i++) {
+            M5.Lcd.printf("%02X ", packet[i]);
+        }
+        M5.Lcd.println();
+        M5.Lcd.setCursor(0, 120);
+        M5.Lcd.printf("Checksum: %02X", checksum);
+        M5.Lcd.println();
+    }
+
+    if ((packet[1] == 0xA4 && packet[3] == 0x77)) {
+        M5.Lcd.setCursor(0, 140);
+        M5.Lcd.print("Packet: ");
+        for (int i = 0; i < sizeof(packet); i++) {
+            M5.Lcd.printf("%02X ", packet[i]);
+        }
+        M5.Lcd.println();
+        M5.Lcd.setCursor(0, 180);
+        M5.Lcd.printf("Checksum: %02X", checksum);
+        M5.Lcd.println();
+    }
+
+    motorSerial.write(packet, sizeof(packet));
+    motorSerial.write(checksum);
 }
