@@ -15,7 +15,6 @@
 
 #include <M5Stack.h>
 #include "SetupM5stack.h"
-#include "MotorController.h"
 
 void setupM5stack() {
   M5.begin();
@@ -24,11 +23,3 @@ void setupM5stack() {
   M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
 }
 
-void initializeUART() {
-    Serial.begin(BAUD_RATE);
-    while (!Serial);  // シリアルポートが開くのを待つ
-    motorSerial.begin(BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
-    Serial.println("Setup complete. Ready to read high resolution speed data.");
-    initMotor(motorSerial, MOTOR_ID);
-    M5.Lcd.print("micro ROS2 M5Stack START\n");    
-}

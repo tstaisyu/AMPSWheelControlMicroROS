@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <M5Stack.h>
 #include "MotorController.h"
 
 extern HardwareSerial motorSerial(2);
@@ -26,6 +25,15 @@ bool initial_data_received = false;
 unsigned long last_receive_time = 0;
 VelocityCommand currentCommand;
 unsigned long lastReadTime = 0;
+
+void initializeUART() {
+    Serial.begin(BAUD_RATE);
+    while (!Serial);  // シリアルポートが開くのを待つ
+    motorSerial.begin(BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+    Serial.println("Setup complete. Ready to read high resolution speed data.");
+    initMotor(motorSerial, MOTOR_ID);
+    M5.Lcd.print("micro ROS2 M5Stack START\n");    
+}
 
 void initMotor(HardwareSerial& serial, byte motorID) {
     motorController.sendCommand(motorID, OPERATION_MODE_ADDRESS, MOTOR_SETUP_COMMAND, OPERATION_MODE_SPEED_CONTROL);

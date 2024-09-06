@@ -16,6 +16,7 @@
 #ifndef MOTOR_CONTROLLER_H
 #define MOTOR_CONTROLLER_H
 
+#include <M5Stack.h>
 #include <HardwareSerial.h>
 
 class MotorController {
@@ -53,7 +54,7 @@ extern unsigned long lastReadTime;
 
 
 
-
+void initializeUART();
 void initMotor(HardwareSerial& serial, byte motorID);
 /*
 float readSpeedData(HardwareSerial& serial, byte motorID);
