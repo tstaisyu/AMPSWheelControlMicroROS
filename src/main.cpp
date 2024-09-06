@@ -18,8 +18,9 @@
 
 void setup() {
 
-  setupM5stack();  
-
+  setupM5stack();
+  initializeUART();
+  
 }
 
 void loop() {

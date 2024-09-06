@@ -20,5 +20,14 @@ void setupM5stack() {
   M5.begin();
   delay(500);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(0, 0);  // ステータスメッセージの位置を設定
+  M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
+}
+
+void initializeUART() {
+    Serial.begin(BAUD_RATE);
+    while (!Serial);  // シリアルポートが開くのを待つ
+    motorSerial.begin(BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+    Serial.println("Setup complete. Ready to read high resolution speed data.");
+    initMotor(motorSerial, MOTOR_ID);
+    M5.Lcd.print("micro ROS2 M5Stack START\n");    
 }
