@@ -17,6 +17,17 @@
 #include "MotorController.h"
 #include "DisplayManager.h"
 
+rcl_subscription_t subscriber;
+geometry_msgs__msg__Twist msg_sub;
+geometry_msgs__msg__Twist msg_pub;
+rcl_publisher_t vel_publisher;
+nav_msgs__msg__Odometry odom_msg;
+rclc_executor_t executor;
+rclc_support_t support;
+rcl_allocator_t allocator;
+rcl_node_t node;
+rcl_timer_t timer;
+
 void setupMicroROS() {
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
@@ -26,9 +37,6 @@ void setupMicroROS() {
 	//RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));		// ドメインIDの設定
 	//RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator)); // 前のrclc_support_initは削除する
   RCCHECK(rclc_node_init_default(&node, "subscriber_node", "", &support));
-
-  // 通信トピックの設定
-  const char* velocity_topic = is_right_wheel ? "/right_vel" : "/left_vel";
 
   RCCHECK(rclc_subscription_init_best_effort(
     &subscriber,

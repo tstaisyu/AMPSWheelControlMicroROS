@@ -25,16 +25,16 @@
 #include <geometry_msgs/msg/twist.h>
 #include <nav_msgs/msg/odometry.h>
 
-rcl_subscription_t subscriber;
-geometry_msgs__msg__Twist msg_sub;
-geometry_msgs__msg__Twist msg_pub;
-rcl_publisher_t vel_publisher;
-nav_msgs__msg__Odometry odom_msg;
-rclc_executor_t executor;
-rclc_support_t support;
-rcl_allocator_t allocator;
-rcl_node_t node;
-rcl_timer_t timer;
+extern rcl_subscription_t subscriber;
+extern geometry_msgs__msg__Twist msg_sub;
+extern geometry_msgs__msg__Twist msg_pub;
+extern rcl_publisher_t vel_publisher;
+extern nav_msgs__msg__Odometry odom_msg;
+extern rclc_executor_t executor;
+extern rclc_support_t support;
+extern rcl_allocator_t allocator;
+extern rcl_node_t node;
+extern rcl_timer_t timer;
 //rcl_init_options_t init_options; // Humble
 //size_t domain_id = 117;
 

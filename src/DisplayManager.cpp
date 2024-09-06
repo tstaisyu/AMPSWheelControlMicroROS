@@ -16,7 +16,7 @@
 #include <M5Stack.h>
 #include "DisplayManager.h"
 
-void updateDisplay(const geometry_msgs__msg__Twist* msg_sub) {
+void updateDisplay(const geometry_msgs__msg__Twist* msg) {
   M5.Lcd.clear();  // LCD画面をクリア
   M5.Lcd.setCursor(0, 20);  // テキスト表示位置を設定
   M5.Lcd.print("Callback triggered");
