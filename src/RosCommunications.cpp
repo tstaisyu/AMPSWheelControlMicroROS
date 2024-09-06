@@ -17,8 +17,6 @@
 #include "MotorController.h"
 #include "DisplayManager.h"
 
-bool is_right_wheel = true; // または外部から設定できるようにする
-
 void setupMicroROS() {
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
@@ -39,12 +37,23 @@ void setupMicroROS() {
     "/cmd_vel"
   ));
 
+  #ifdef LEFT_WHEEL
+  // 左輪用の処理
   RCCHECK(rclc_publisher_init_best_effort(
       &vel_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      velocity_topic
+      "/left_vel"
   ));
+  #elif defined(RIGHT_WHEEL)
+  // 右輪用の処理
+  RCCHECK(rclc_publisher_init_best_effort(
+      &vel_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "/right_vel"
+  ));
+  #endif
 
 	int callback_size = 1;	// コールバックを行う数
 //	executor = rclc_executor_get_zero_initialized_executor();

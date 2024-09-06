@@ -57,13 +57,13 @@ extern unsigned long lastReadTime;
 void initializeUART();
 void initMotor(HardwareSerial& serial, byte motorID);
 void sendMotorCommands(float linearVelocity, float angularVelocity);
+uint32_t velocityToDEC(float velocityMPS);
+void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID);
 
 /*
 float readSpeedData(HardwareSerial& serial, byte motorID);
 uint32_t reverseBytes(uint32_t value);
 float calculateVelocityMPS(int32_t dec);
-void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID);
-uint32_t velocityToDEC(float velocityMPS);
 byte calculateChecksum(byte *data, int len);
 */
 

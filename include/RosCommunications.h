@@ -38,8 +38,6 @@ rcl_timer_t timer;
 //rcl_init_options_t init_options; // Humble
 //size_t domain_id = 117;
 
-extern bool is_right_wheel; // trueなら右ホイール用のロジック、falseなら左ホイール用
-
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if ((temp_rc != RCL_RET_OK)) {Serial.println("Error in " #fn); return;}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 

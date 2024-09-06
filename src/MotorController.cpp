@@ -81,15 +81,26 @@ void MotorController::sendCommand(byte motorID, uint16_t address, byte command, 
 }
 
 void sendMotorCommands(float linearVelocity, float angularVelocity) {
-  // ここで左右のホイールの速度を計算
-  float rightWheelSpeed = linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2);
-  float leftWheelSpeed = (-1) * (linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2));
-  //Rightは  float leftWheelSpeed = linearVelocity - (WHEEL_DISTANCE * angularVelocity / 2);
+    #ifdef LEFT_WHEEL
+    // 左輪用の設定
+    float wheelSpeed = (-1) * (linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2));
+    #elif defined(RIGHT_WHEEL)
+    // 右輪用の設定
+    float wheelSpeed = linearVelocity - (WHEEL_DISTANCE * angularVelocity / 2);
+    #endif
 
-  int rightWheelDec = velocityToDEC(rightWheelSpeed);
-  int leftWheelDec = velocityToDEC(leftWheelSpeed);
+  int wheelDec = velocityToDEC(wheelSpeed);
 
-    // 右輪と左輪に速度指令を送信
-  sendVelocityDEC(rightMotorSerial, rightWheelDec, MOTOR_RIGHT_ID);
-  sendVelocityDEC(leftMotorSerial, leftWheelDec, MOTOR_LEFT_ID);
+  // 右輪と左輪に速度指令を送信
+  sendVelocityDEC(motorSerial, wheelDec, MOTOR_ID);
+}
+
+uint32_t velocityToDEC(float velocityMPS) {
+    float wheelCircumference = WHEEL_RADIUS * 2 * PI;
+    float rpm = (velocityMPS * 60.0) / wheelCircumference;
+    return static_cast<uint32_t>((rpm * 512.0 * 4096.0) / 1875.0);
+}
+
+void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID) {
+  motorController.sendCommand(motorID, TARGET_VELOCITY_DEC_ADDRESS, VEL_SEND_COMMAND, velocityDec);
 }
