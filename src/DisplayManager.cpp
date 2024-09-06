@@ -14,19 +14,18 @@
  */
 
 #include <M5Stack.h>
-#include "SetupM5stack.h"
-#include "MotorController.h"
-#include "RosCommunications.h"
+#include "DisplayManager.h"
 
-void setup() {
+void updateDisplay(const geometry_msgs__msg__Twist* msg_sub) {
+  M5.Lcd.clear();  // LCD画面をクリア
+  M5.Lcd.setCursor(0, 20);  // テキスト表示位置を設定
+  M5.Lcd.print("Callback triggered");
 
-  setupM5stack();
-  initializeUART();
-  setupMicroROS();
-  last_receive_time = millis();
+  M5.Lcd.setCursor(0, 40);
+  M5.Lcd.print("Linear.x: ");
+  M5.Lcd.println(msg->linear.x);
+
+  M5.Lcd.setCursor(0, 60);
+  M5.Lcd.print("Angular.z: ");
+  M5.Lcd.println(msg->angular.z);
 }
-
-void loop() {
-
-}
-

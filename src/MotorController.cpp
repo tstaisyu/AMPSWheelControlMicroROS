@@ -15,8 +15,8 @@
 
 #include "MotorController.h"
 
-extern HardwareSerial motorSerial(2);
-extern MotorController motorController(motorSerial);
+HardwareSerial motorSerial(2);
+MotorController motorController(motorSerial);
 
 double x_position = 0.0;
 double y_position = 0.0;
@@ -78,4 +78,18 @@ void MotorController::sendCommand(byte motorID, uint16_t address, byte command, 
 
     motorSerial.write(packet, sizeof(packet));
     motorSerial.write(checksum);
+}
+
+void sendMotorCommands(float linearVelocity, float angularVelocity) {
+  // ここで左右のホイールの速度を計算
+  float rightWheelSpeed = linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2);
+  float leftWheelSpeed = (-1) * (linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2));
+  //Rightは  float leftWheelSpeed = linearVelocity - (WHEEL_DISTANCE * angularVelocity / 2);
+
+  int rightWheelDec = velocityToDEC(rightWheelSpeed);
+  int leftWheelDec = velocityToDEC(leftWheelSpeed);
+
+    // 右輪と左輪に速度指令を送信
+  sendVelocityDEC(rightMotorSerial, rightWheelDec, MOTOR_RIGHT_ID);
+  sendVelocityDEC(leftMotorSerial, leftWheelDec, MOTOR_LEFT_ID);
 }
