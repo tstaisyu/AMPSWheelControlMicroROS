@@ -34,6 +34,26 @@ struct VelocityCommand {
   float angular_z;
 };
 
+
+extern HardwareSerial motorSerial;
+extern MotorController motorController;
+
+// グローバル変数で現在の位置と姿勢を保持
+extern double x_position;
+extern double y_position;
+extern double theta; // ロボットの向き（ラジアン）
+
+extern bool initial_data_received; // データ受信の有無を追跡
+extern unsigned long last_receive_time; // 最後にデータを受信した時刻
+
+extern VelocityCommand currentCommand;
+
+extern unsigned long lastReadTime;
+
+
+
+
+
 void initMotor(HardwareSerial& serial, byte motorID);
 /*
 float readSpeedData(HardwareSerial& serial, byte motorID);
@@ -44,10 +64,7 @@ void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID);
 uint32_t velocityToDEC(float velocityMPS);
 byte calculateChecksum(byte *data, int len);
 */
-// グローバル変数で現在の位置と姿勢を保持
-double x_position = 0.0;
-double y_position = 0.0;
-double theta = 0.0; // ロボットの向き（ラジアン）
+
 
 constexpr byte MOTOR_ID = 0x01;
 
@@ -88,8 +105,6 @@ constexpr uint32_t SEND_INTERVAL = 1000; // 速度コマンドの送信間隔 (�
 constexpr float WHEEL_RADIUS = 0.055; // 車輪の半径 (メートル)
 constexpr float WHEEL_DISTANCE = 0.202; // ホイール間の距離を設定 (メートル)
 
-bool initial_data_received = false; // データ受信の有無を追跡
-unsigned long last_receive_time = 0; // 最後にデータを受信した時刻
 #define RECEIVE_TIMEOUT 5000 // タイムアウト値を5000ミリ秒に設定
 
 #define SCALE_FACTOR 1000 // 1000倍して整数演算を行う
@@ -98,12 +113,7 @@ const float WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * PI / 60.0 * SCALE_FACTOR; /
 /*
 BluetoothSerial SerialBT;
 */
-HardwareSerial motorSerial(2);
-MotorController motorController(motorSerial);
 
-VelocityCommand currentCommand;
-
-unsigned long lastReadTime = 0;
 const unsigned int readInterval = 40; 
 
 #endif // MOTOR_CONTROLLER_H
