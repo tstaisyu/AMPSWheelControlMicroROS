@@ -39,7 +39,7 @@ struct VelocityCommand {
 extern HardwareSerial motorSerial;
 extern MotorController motorController;
 
-// グローバル変数で現在の位置と姿勢を保持
+// 現在の位置と姿勢
 extern double x_position;
 extern double y_position;
 extern double theta; // ロボットの向き（ラジアン）
@@ -105,9 +105,9 @@ constexpr uint32_t SEND_INTERVAL = 1000; // 速度コマンドの送信間隔 (�
 
 // モーター仕様
 constexpr float WHEEL_RADIUS = 0.055; // 車輪の半径 (メートル)
-constexpr float WHEEL_DISTANCE = 0.202; // ホイール間の距離を設定 (メートル)
+constexpr float WHEEL_DISTANCE = 0.202; // ホイール間の距離 (メートル)
 
-#define RECEIVE_TIMEOUT 5000 // タイムアウト値を5000ミリ秒に設定
+#define RECEIVE_TIMEOUT 5000 // タイムアウト値（ミリ秒）
 
 #define SCALE_FACTOR 1000 // 1000倍して整数演算を行う
 
@@ -118,4 +118,4 @@ BluetoothSerial SerialBT;
 
 const unsigned int readInterval = 40; 
 
-#endif // MOTOR_CONTROLLER_H
+#endif
