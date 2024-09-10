@@ -3,6 +3,6 @@
 
 #include <geometry_msgs/msg/twist.h>
 
-void updateDisplay(const geometry_msgs__msg__Twist* msg_sub);
+void updateDisplay(const geometry_msgs__msg__Twist* msg);
 
 #endif
