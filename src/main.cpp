@@ -17,7 +17,6 @@
 #include "SystemManager.h"
 #include "MotorController.h"
 #include "RosCommunications.h"
-#include "SystemManager.h"
 
 void setup() {
 
