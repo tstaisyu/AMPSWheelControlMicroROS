@@ -89,7 +89,7 @@ void subscription_callback(const void * msgin) {
 void handleDataPublishing() {
   unsigned long currentMillis = millis();
   if (currentMillis - lastReadTime >= readInterval) {
-    publishSpeedData();
+    //publishSpeedData();
     lastReadTime = currentMillis;
   }
 }
