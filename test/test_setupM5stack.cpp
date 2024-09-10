@@ -14,7 +14,7 @@
  */
 
 #include <M5Stack.h>
-#include "SetupM5stack.h"
+#include "SystemManager.h"
 #include <unity.h>
 
 void test_setupM5stack_function() {

@@ -14,9 +14,10 @@
  */
 
 #include <M5Stack.h>
-#include "SetupM5stack.h"
+#include "SystemManager.h"
 #include "MotorController.h"
 #include "RosCommunications.h"
+#include "SystemManager.h"
 
 void setup() {
 
