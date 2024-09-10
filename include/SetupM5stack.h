@@ -17,5 +17,6 @@
 #define SETUP_M5STACK_H
 
 void setupM5stack();
+void checkDataTimeout();
 
 #endif

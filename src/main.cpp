@@ -31,11 +31,3 @@ void loop() {
   handleExecutorSpin();
   checkDataTimeout();
 }
-
-void checkDataTimeout() {
-  if (!initial_data_received && (millis() - last_receive_time > RECEIVE_TIMEOUT)) {
-    Serial.printf("No data received for %d seconds, restarting...\n", RECEIVE_TIMEOUT / 1000);
-    ESP.restart();
-  }
-}
-
