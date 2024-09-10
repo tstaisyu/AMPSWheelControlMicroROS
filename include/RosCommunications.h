@@ -51,4 +51,8 @@ void updateOdometry(float rightWheelSpeed, float leftWheelSpeed);
 void prepareAndPublishOdometry(double x, double y, double theta, double linear_velocity, double angular_velocity);
 void setQuaternionFromYaw(double yaw, geometry_msgs__msg__Quaternion *orientation);
 */
+
+void handleDataPublishing();
+void handleExecutorSpin();
+
 #endif

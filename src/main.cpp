@@ -32,23 +32,6 @@ void loop() {
   checkDataTimeout();
 }
 
-void handleDataPublishing() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastReadTime >= readInterval) {
-    publishSpeedData();
-    lastReadTime = currentMillis;
-  }
-}
-
-void handleExecutorSpin() {
-  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
-  if (rcl_error_is_set()) {
-    RCL_SET_ERROR_MSG("rclc_executor_spin_some failed");
-    printf("Error in rclc_executor_spin_some: %s\n", rcl_get_error_string().str);
-    rcl_reset_error();
-  }
-}
-
 void checkDataTimeout() {
   if (!initial_data_received && (millis() - last_receive_time > RECEIVE_TIMEOUT)) {
     Serial.printf("No data received for %d seconds, restarting...\n", RECEIVE_TIMEOUT / 1000);

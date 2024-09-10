@@ -85,3 +85,20 @@ void subscription_callback(const void * msgin) {
 //  updateOdometry(rightWheelSpeed, leftWheelSpeed); // オドメトリの更新
 
 }
+
+void handleDataPublishing() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - lastReadTime >= readInterval) {
+    publishSpeedData();
+    lastReadTime = currentMillis;
+  }
+}
+
+void handleExecutorSpin() {
+  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
+  if (rcl_error_is_set()) {
+    RCL_SET_ERROR_MSG("rclc_executor_spin_some failed");
+    printf("Error in rclc_executor_spin_some: %s\n", rcl_get_error_string().str);
+    rcl_reset_error();
+  }
+}
