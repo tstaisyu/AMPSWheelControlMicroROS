@@ -14,9 +14,9 @@
   limitations under the License.
 -->
 
-# AMPS IWS45L1D1350B-MCAFC Wheel Motor Control with microROS
+# AMPS Hub Wheel Motor Control with microROS
 
-このプロジェクトは、AMPS社のIWS45L1D1350B-MCAFCハブホイールモータを制御し、M5Stackマイクロコントローラーボードを使用してホイールの速度を制御するものです。microROSを活用してエンコーダからの速度情報を読み取り、ROS 2のトピックを介して速度情報を送信します。このシステムは自動的にホイールの速度を調整し、エンコーダーからのフィードバックに基づいてROS 2ネットワーク上でデータを共有します。
+このリポジトリは、microROSを活用してAMPS社のIWS45L1D1350B-MCAFCハブホイールモータを制御し、マイクロコントローラーボードM5Stackを使用してホイールの速度を制御するものです。また、エンコーダからの速度情報を読み取り、ROS 2のトピックを介して速度情報を送信します。このシステムは自動的にホイールの速度を調整し、エンコーダーからのフィードバックに基づいてROS 2ネットワーク上でデータを共有します。
 
 ## ディレクトリ構成
 
