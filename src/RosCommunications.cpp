@@ -86,12 +86,11 @@ void setupMicroROS() {
 }
 
 void publish_speed_data() {
-    // メッセージを設定
+
     geometry_msgs__msg__Twist msg;
     msg.linear.x = calculated_speed;
     msg.angular.z = 0.0;
     
-    // メッセージをパブリッシュ
     RCCHECK(rcl_publish(&vel_publisher, &msg, NULL));
 }
 
