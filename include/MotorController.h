@@ -49,7 +49,7 @@ extern unsigned long last_receive_time; // 最後にデータを受信した時�
 
 extern VelocityCommand currentCommand;
 
-extern unsigned long lastReadTime;
+//extern unsigned long lastReadTime;
 
 
 
@@ -116,6 +116,6 @@ const float WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * PI / 60.0 * SCALE_FACTOR; /
 BluetoothSerial SerialBT;
 */
 
-const unsigned int readInterval = 40; 
+//const unsigned int readInterval = 40; 
 
 #endif
