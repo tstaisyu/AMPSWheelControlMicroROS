@@ -16,6 +16,7 @@
 #include "RosCommunications.h"
 #include "MotorController.h"
 #include "DisplayManager.h"
+#include "SerialManager.h"
 
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
@@ -77,13 +78,9 @@ void subscription_callback(const void * msgin) {
   if (!initial_data_received) {
     initial_data_received = true;
   }
-  
   updateDisplay(msg_sub);
-//  logReceivedData(msg_sub);
+  logReceivedData(msg_sub);
   sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
-
-//  updateOdometry(rightWheelSpeed, leftWheelSpeed); // オドメトリの更新
-
 }
 
 void handleDataPublishing() {
