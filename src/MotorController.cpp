@@ -104,3 +104,31 @@ uint32_t velocityToDEC(float velocityMPS) {
 void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID) {
   motorController.sendCommand(motorID, TARGET_VELOCITY_DEC_ADDRESS, VEL_SEND_COMMAND, velocityDec);
 }
+
+float readSpeedData(HardwareSerial& serial, byte motorID) {
+    motorController.sendCommand(motorID, ACTUAL_SPEED_DEC_ADDRESS, READ_DEC_COMMAND, 0);
+    if (serial.available() >= 10) {
+        uint8_t response[10];
+        serial.readBytes(response, 10);
+        uint16_t responseAddress = ((uint16_t)response[2] << 8) | response[3];
+        if (response[0] == motorID && response[1] == READ_DEC_SUCCESS && responseAddress == ACTUAL_SPEED_DEC_ADDRESS) {
+            int32_t receivedDec;
+            memcpy(&receivedDec, &response[5], sizeof(receivedDec));
+            receivedDec = reverseBytes(receivedDec);
+            float velocityMPS = calculateVelocityMPS(receivedDec);
+            return velocityMPS;        }
+    }
+    return 0.0;
+}
+
+uint32_t reverseBytes(uint32_t value) {
+    return ((value & 0x000000FF) << 24) |
+           ((value & 0x0000FF00) << 8) |
+           ((value & 0x00FF0000) >> 8) |
+           ((value & 0xFF000000) >> 24);
+}
+
+float calculateVelocityMPS(int32_t dec) {
+    int scaledRPM = (dec * 1875) / (512 * 4096);
+    return (scaledRPM * WHEEL_CIRCUMFERENCE) / SCALE_FACTOR;
+}
