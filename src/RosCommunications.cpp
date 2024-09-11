@@ -37,7 +37,11 @@ void setupMicroROS() {
 	//RCCHECK(rcl_init_options_init(&init_options, allocator));
 	//RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));		// ドメインIDの設定
 	//RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator)); // 前のrclc_support_initは削除する
-  RCCHECK(rclc_node_init_default(&node, "subscriber_node", "", &support));
+  #ifdef LEFT_WHEEL
+  RCCHECK(rclc_node_init_default(&node, "left_wheel_node", "", &support));
+  #elif defined(RIGHT_WHEEL)
+  RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
+  #endif
 
   RCCHECK(rclc_subscription_init_best_effort(
     &subscriber,
@@ -64,11 +68,31 @@ void setupMicroROS() {
   ));
   #endif
 
+  // タイマーの初期化
+  rcl_timer_t publish_timer;
+  const unsigned int publish_period = 20;  // 20ms
+  RCCHECK(rclc_timer_init_default(
+      &publish_timer,
+      &support,
+      RCL_MS_TO_NS(publish_period),
+      publish_speed_data
+  ));
+
 	int callback_size = 1;	// コールバックを行う数
 //	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
   RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_timer(&executor, &publish_timer));
+}
 
+void publish_speed_data() {
+    // メッセージを設定
+    geometry_msgs__msg__Twist msg;
+    msg.linear.x = calculated_speed;
+    msg.angular.z = 0.0;
+    
+    // メッセージをパブリッシュ
+    RCCHECK(rcl_publish(&vel_publisher, &msg, NULL));
 }
 
 void subscription_callback(const void * msgin) {
