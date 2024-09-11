@@ -85,15 +85,6 @@ void setupMicroROS() {
   RCCHECK(rclc_executor_add_timer(&executor, &publish_timer));
 }
 
-void publish_speed_data() {
-
-    geometry_msgs__msg__Twist msg;
-    msg.linear.x = calculated_speed;
-    msg.angular.z = 0.0;
-    
-    RCCHECK(rcl_publish(&vel_publisher, &msg, NULL));
-}
-
 void subscription_callback(const void * msgin) {
 
   const geometry_msgs__msg__Twist * msg_sub = (const geometry_msgs__msg__Twist *)msgin;
@@ -104,6 +95,16 @@ void subscription_callback(const void * msgin) {
   updateDisplay(msg_sub);
   logReceivedData(msg_sub);
   sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
+}
+
+void publish_speed_data(rcl_timer_t *timer, int64_t last_call_time) {
+    float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+
+    geometry_msgs__msg__Twist msg;
+    msg.linear.x = wheelSpeed;
+    msg.angular.z = 0.0;
+    
+    RCCHECK(rcl_publish(&vel_publisher, &msg, NULL));
 }
 
 void handleExecutorSpin() {
