@@ -27,7 +27,6 @@ void setup() {
 }
 
 void loop() {
-  handleDataPublishing();
   handleExecutorSpin();
   checkDataTimeout();
 }

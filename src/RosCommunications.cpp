@@ -107,14 +107,6 @@ void subscription_callback(const void * msgin) {
   sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
 }
 
-void handleDataPublishing() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastReadTime >= readInterval) {
-    //publishSpeedData();
-    lastReadTime = currentMillis;
-  }
-}
-
 void handleExecutorSpin() {
   RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
   if (rcl_error_is_set()) {
