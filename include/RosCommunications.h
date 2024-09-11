@@ -43,6 +43,7 @@ extern rcl_timer_t timer;
 
 void setupMicroROS();
 void subscription_callback(const void * msgin);
+void publish_speed_data(rcl_timer_t *timer, int64_t last_call_time);
 /*
 void logReceivedData(const geometry_msgs__msg__Twist *msg);
 void updateDisplay(const geometry_msgs__msg__Twist *msg);
