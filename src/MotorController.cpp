@@ -116,7 +116,8 @@ float readSpeedData(HardwareSerial& serial, byte motorID) {
             memcpy(&receivedDec, &response[5], sizeof(receivedDec));
             receivedDec = reverseBytes(receivedDec);
             float velocityMPS = calculateVelocityMPS(receivedDec);
-            return velocityMPS;        }
+            return velocityMPS;
+        }
     }
     return 0.0;
 }
