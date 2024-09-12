@@ -16,6 +16,7 @@
 #ifndef ROS_COMMUNICATIONS_H
 #define ROS_COMMUNICATIONS_H
 
+#include <M5Stack.h>
 #include <micro_ros_arduino.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>

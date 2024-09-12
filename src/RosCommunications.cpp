@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-#include <M5Stack.h>
 #include "RosCommunications.h"
 #include "MotorController.h"
 #include "DisplayManager.h"
