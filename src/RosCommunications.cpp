@@ -71,12 +71,11 @@ void setupMicroROS() {
 
   // タイマーの初期化
   const unsigned int timer_timeout = 20;  // 20ms
-  RCCHECK(rclc_timer_init_default2(
+  RCCHECK(rclc_timer_init_default(
       &timer,
       &support,
       RCL_MS_TO_NS(timer_timeout),
-      timer_callback,
-      NULL
+      timer_callback
   ));
 
 	int callback_size = 2;	// コールバックを行う数
