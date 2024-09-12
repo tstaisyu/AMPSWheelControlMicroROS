@@ -30,6 +30,7 @@ rcl_node_t node;
 rcl_timer_t timer;
 
 void setupMicroROS() {
+  Serial.begin(115200);
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
