@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include <M5Stack.h>
 #include "RosCommunications.h"
 #include "MotorController.h"
 #include "DisplayManager.h"
@@ -100,7 +100,8 @@ void subscription_callback(const void * msgin) {
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
-
+  M5.Lcd.setCursor(0, 120);
+  M5.Lcd.print("Timer callback");
   float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
 
   geometry_msgs__msg__Twist msg;
