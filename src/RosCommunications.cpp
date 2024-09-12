@@ -99,13 +99,17 @@ void subscription_callback(const void * msgin) {
 }
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
-    float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+  RCLC_UNUSED(last_call_time);
 
-    geometry_msgs__msg__Twist msg;
-    msg.linear.x = wheelSpeed;
-    msg.angular.z = 0.0;
+  float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+
+  geometry_msgs__msg__Twist msg;
+  msg.linear.x = wheelSpeed;
+  msg.angular.z = 0.0;
     
-    RCCHECK(rcl_publish(&vel_publisher, &msg, NULL));
+  if (timer != NULL) {
+    RCSOFTCHECK(rcl_publish(&vel_publisher, &msg, NULL));
+  }
 }
 
 void handleExecutorSpin() {
