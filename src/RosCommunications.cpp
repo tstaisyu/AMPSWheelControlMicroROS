@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <M5Stack.h>
 #include "RosCommunications.h"
 #include "MotorController.h"
@@ -20,9 +21,9 @@
 
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
-geometry_msgs__msg__Twist msg_pub;
 rcl_publisher_t vel_publisher;
-nav_msgs__msg__Odometry odom_msg;
+rcl_publisher_t imu_publisher;
+sensor_msgs__msg__Imu imu_msg;
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -69,6 +70,16 @@ void setupMicroROS() {
   ));
   #endif
 
+  #ifdef LEFT_WHEEL
+  // Initialize IMU data publisher for left wheel
+  RCCHECK(rclc_publisher_init_best_effort(
+      &imu_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+      "/left_wheel_imu"
+  ));
+  #endif
+
   // タイマーの初期化
   const unsigned int timer_timeout = 20;  // 20ms
   RCCHECK(rclc_timer_init_default(
@@ -101,14 +112,33 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   M5.Lcd.setCursor(0, 120);
   M5.Lcd.print("Timer callback");
-  float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
 
-  geometry_msgs__msg__Twist msg;
-  msg.linear.x = wheelSpeed;
-  msg.angular.z = 0.0;
-    
+  // Publish wheel speed data
+  float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+  geometry_msgs__msg__Twist vel_msg;
+  vel_msg.linear.x = wheelSpeed;
+  vel_msg.angular.z = 0.0;    
   if (timer != NULL) {
-    RCSOFTCHECK(rcl_publish(&vel_publisher, &msg, NULL));
+    RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
+  }
+
+  // Read IMU data
+  float ax, ay, az, gx, gy, gz;
+  M5.Imu.getAccelData(&ax, &ay, &az);
+  M5.Imu.getGyroData(&gx, &gy, &gz);
+
+  // Fill IMU message
+//  imu_msg.header.stamp = rcl_node_now(&node);
+  imu_msg.linear_acceleration.x = ax * GRAVITY;
+  imu_msg.linear_acceleration.y = ay * GRAVITY;
+  imu_msg.linear_acceleration.z = az * GRAVITY;
+  imu_msg.angular_velocity.x = gx;
+  imu_msg.angular_velocity.y = gy;
+  imu_msg.angular_velocity.z = gz;
+
+  // Publish IMU data
+  if (timer != NULL) {
+    RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
   }
 }
 

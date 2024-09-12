@@ -23,13 +23,15 @@
 #include <rclc/executor.h>
 #include "rcutils/time.h"
 #include <geometry_msgs/msg/twist.h>
-#include <nav_msgs/msg/odometry.h>
+#include <sensor_msgs/msg/imu.h>
+
+#define GRAVITY 9.81f
 
 extern rcl_subscription_t subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
-extern geometry_msgs__msg__Twist msg_pub;
 extern rcl_publisher_t vel_publisher;
-extern nav_msgs__msg__Odometry odom_msg;
+extern rcl_publisher_t imu_publisher;
+extern sensor_msgs__msg__Imu imu_msg;
 extern rclc_executor_t executor;
 extern rclc_support_t support;
 extern rcl_allocator_t allocator;
