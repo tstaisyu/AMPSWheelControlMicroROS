@@ -69,10 +69,9 @@ void setupMicroROS() {
   #endif
 
   // タイマーの初期化
-  rcl_timer_t publish_timer;
   const unsigned int timer_timeout = 20;  // 20ms
   RCCHECK(rclc_timer_init_default2(
-      &publish_timer,
+      &timer,
       &support,
       RCL_MS_TO_NS(timer_timeout),
       timer_callback,
@@ -83,7 +82,7 @@ void setupMicroROS() {
 //	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
   RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
-  RCCHECK(rclc_executor_add_timer(&executor, &publish_timer));
+  RCCHECK(rclc_executor_add_timer(&executor, &timer));
 }
 
 void subscription_callback(const void * msgin) {
