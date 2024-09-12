@@ -71,11 +71,12 @@ void setupMicroROS() {
   // タイマーの初期化
   rcl_timer_t publish_timer;
   const unsigned int publish_period = 20;  // 20ms
-  RCCHECK(rclc_timer_init_default(
+  RCCHECK(rclc_timer_init_default2(
       &publish_timer,
       &support,
       RCL_MS_TO_NS(publish_period),
-      publish_speed_data
+      publish_speed_data,
+      NULL
   ));
 
 	int callback_size = 1;	// コールバックを行う数
