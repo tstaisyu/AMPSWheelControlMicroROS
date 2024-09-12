@@ -70,12 +70,12 @@ void setupMicroROS() {
 
   // タイマーの初期化
   rcl_timer_t publish_timer;
-  const unsigned int publish_period = 20;  // 20ms
+  const unsigned int timer_timeout = 20;  // 20ms
   RCCHECK(rclc_timer_init_default2(
       &publish_timer,
       &support,
-      RCL_MS_TO_NS(publish_period),
-      publish_speed_data,
+      RCL_MS_TO_NS(timer_timeout),
+      timer_callback,
       NULL
   ));
 
@@ -98,7 +98,7 @@ void subscription_callback(const void * msgin) {
   sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
 }
 
-void publish_speed_data(rcl_timer_t *timer, int64_t last_call_time) {
+void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
 
     geometry_msgs__msg__Twist msg;
