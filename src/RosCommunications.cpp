@@ -79,8 +79,8 @@ void setupMicroROS() {
       NULL
   ));
 
-	int callback_size = 1;	// コールバックを行う数
-//	executor = rclc_executor_get_zero_initialized_executor();
+	int callback_size = 2;	// コールバックを行う数
+	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
   RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
