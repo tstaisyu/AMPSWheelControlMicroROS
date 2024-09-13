@@ -32,7 +32,6 @@ rcl_time_point_value_t current_time;
 rcl_clock_t ros_clock;
 
 void setupMicroROS() {
-  Serial.begin(115200);
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
   rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
