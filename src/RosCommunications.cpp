@@ -35,7 +35,11 @@ void setupMicroROS() {
   Serial.begin(115200);
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
-  rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
+  rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
+  if (rc != RCL_RET_OK) {
+      Serial.println("Failed to initialize ROS clock");
+      return;
+  }
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 	//init_options = rcl_get_zero_initialized_init_options();
 	//RCCHECK(rcl_init_options_init(&init_options, allocator));
