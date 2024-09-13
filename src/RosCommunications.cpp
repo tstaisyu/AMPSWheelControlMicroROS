@@ -145,6 +145,8 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
       vel_msg.twist.twist.linear.x = wheelSpeed;
       vel_msg.twist.twist.angular.z = 0.0;    
+      static char frame_id_buffer[256]; // 十分なサイズを確保
+      vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
 
       #ifdef LEFT_WHEEL
       const char* frame_id = "left_wheel";
