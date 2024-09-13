@@ -24,6 +24,7 @@
 #include <rclc/executor.h>
 #include "rcutils/time.h"
 #include <geometry_msgs/msg/twist.h>
+#include <nav_msgs/msg/odometry.h>
 #include <sensor_msgs/msg/imu.h>
 
 #define GRAVITY 9.81f
@@ -38,6 +39,8 @@ extern rclc_support_t support;
 extern rcl_allocator_t allocator;
 extern rcl_node_t node;
 extern rcl_timer_t timer;
+extern rcl_time_point_value_t current_time;
+extern rcl_clock_t ros_clock;
 //rcl_init_options_t init_options; // Humble
 //size_t domain_id = 117;
 

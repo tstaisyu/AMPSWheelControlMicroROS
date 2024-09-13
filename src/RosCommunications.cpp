@@ -28,11 +28,14 @@ rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
+rcl_time_point_value_t current_time;
+rcl_clock_t ros_clock;
 
 void setupMicroROS() {
   Serial.begin(115200);
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
+  rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
   RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
 	//init_options = rcl_get_zero_initialized_init_options();
 	//RCCHECK(rcl_init_options_init(&init_options, allocator));
@@ -111,34 +114,53 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
   M5.Lcd.setCursor(0, 120);
   M5.Lcd.print("Timer callback");
+  nav_msgs__msg__Odometry vel_msg;
 
-  // Publish wheel speed data
-  float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
-  geometry_msgs__msg__Twist vel_msg;
-  vel_msg.linear.x = wheelSpeed;
-  vel_msg.angular.z = 0.0;    
-  if (timer != NULL) {
-    RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
+  rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
+  if (rc != RCL_RET_OK) {
+      // エラー処理
+      Serial.println("Failed to get current time");
+  } else {
+      // Read IMU data
+      float ax, ay, az, gx, gy, gz;
+      M5.Imu.getAccelData(&ax, &ay, &az);
+      M5.Imu.getGyroData(&gx, &gy, &gz);      
+      
+      // IMUメッセージのタイムスタンプを設定
+      imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
+      imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
+      imu_msg.linear_acceleration.x = ax * GRAVITY;
+      imu_msg.linear_acceleration.y = ay * GRAVITY;
+      imu_msg.linear_acceleration.z = az * GRAVITY;
+      imu_msg.angular_velocity.x = gx;
+      imu_msg.angular_velocity.y = gy;
+      imu_msg.angular_velocity.z = gz;
+
+      // Read wheel speed data
+      float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+      vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
+      vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
+      vel_msg.twist.twist.linear.x = wheelSpeed;
+      vel_msg.twist.twist.angular.z = 0.0;    
+
+      #ifdef LEFT_WHEEL
+      const char* frame_id = "left_wheel";
+      #elif defined(RIGHT_WHEEL)
+      const char* frame_id = "right_wheel";
+      #endif
+      strncpy(vel_msg.header.frame_id.data, frame_id, sizeof(vel_msg.header.frame_id.data));
+      vel_msg.header.frame_id.size = strlen(frame_id);
   }
-
-  // Read IMU data
-  float ax, ay, az, gx, gy, gz;
-  M5.Imu.getAccelData(&ax, &ay, &az);
-  M5.Imu.getGyroData(&gx, &gy, &gz);
-
-  // Fill IMU message
-//  imu_msg.header.stamp = rcl_node_now(&node);
-  imu_msg.linear_acceleration.x = ax * GRAVITY;
-  imu_msg.linear_acceleration.y = ay * GRAVITY;
-  imu_msg.linear_acceleration.z = az * GRAVITY;
-  imu_msg.angular_velocity.x = gx;
-  imu_msg.angular_velocity.y = gy;
-  imu_msg.angular_velocity.z = gz;
 
   // Publish IMU data
   if (timer != NULL) {
     RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
   }
+
+  if (timer != NULL) {
+    RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
+  }
+
 }
 
 void handleExecutorSpin() {
