@@ -164,15 +164,11 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.header.frame_id.size = strlen(frame_id);
   }
 
-  // Publish IMU data
+  // Publish IMU and velocity data
   if (timer != NULL) {
     RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
-  }
-
-  if (timer != NULL) {
     RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
   }
-
 }
 
 void handleExecutorSpin() {
