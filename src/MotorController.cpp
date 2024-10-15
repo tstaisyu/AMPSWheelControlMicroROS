@@ -116,9 +116,17 @@ float readSpeedData(HardwareSerial& serial, byte motorID) {
             memcpy(&receivedDec, &response[5], sizeof(receivedDec));
             receivedDec = reverseBytes(receivedDec);
             float velocityMPS = calculateVelocityMPS(receivedDec);
+
+            // LCDに生のDECデータと速度MPSを表示
+            M5.Lcd.setCursor(0, 80);  // 表示位置設定
+            M5.Lcd.printf("DEC: %ld, Speed: %.2f m/s", receivedDec, velocityMPS);
+
             return velocityMPS;
         }
     }
+    // データがない場合の表示
+    M5.Lcd.setCursor(0, 80);
+    M5.Lcd.print("No data available");
     return 0.0;
 }
 
