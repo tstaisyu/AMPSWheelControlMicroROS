@@ -119,6 +119,13 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   M5.Lcd.print("Timer callback");
   nav_msgs__msg__Odometry vel_msg;
 
+  vel_msg.twist.twist.linear.x = 0.0;
+  vel_msg.twist.twist.linear.y = 0.0;
+  vel_msg.twist.twist.linear.z = 0.0;
+  vel_msg.twist.twist.angular.x = 0.0;
+  vel_msg.twist.twist.angular.y = 0.0;
+  vel_msg.twist.twist.angular.z = 0.0;
+
   rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
   if (rc != RCL_RET_OK) {
       // エラー処理
@@ -144,7 +151,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
       vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
       vel_msg.twist.twist.linear.x = wheelSpeed;
-      vel_msg.twist.twist.angular.z = 0.0;    
+
       static char frame_id_buffer[256]; // 十分なサイズを確保
       vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
 
