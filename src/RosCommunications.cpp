@@ -115,8 +115,9 @@ void subscription_callback(const void * msgin) {
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
-  M5.Lcd.setCursor(0, 120);
-  M5.Lcd.print("Timer callback");
+  M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.print("Timer callback triggered");
   nav_msgs__msg__Odometry vel_msg;
 
   vel_msg.twist.twist.linear.x = 0.0;
@@ -134,8 +135,8 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       // Read IMU data
       float ax, ay, az, gx, gy, gz;
       M5.Imu.getAccelData(&ax, &ay, &az);
-      M5.Imu.getGyroData(&gx, &gy, &gz);      
-      
+      M5.Imu.getGyroData(&gx, &gy, &gz);
+
       // IMUメッセージのタイムスタンプを設定
       imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
       imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
@@ -146,6 +147,12 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       imu_msg.angular_velocity.y = gy;
       imu_msg.angular_velocity.z = gz;
 
+      // IMUデータの表示
+      M5.Lcd.setCursor(0, 20);
+      M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
+      M5.Lcd.setCursor(0, 40);
+      M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);            
+      
       // Read wheel speed data
       float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
       vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
