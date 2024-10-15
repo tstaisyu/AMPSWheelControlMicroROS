@@ -33,7 +33,6 @@ extern rcl_subscription_t subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
-extern sensor_msgs__msg__Imu imu_msg;
 extern rclc_executor_t executor;
 extern rclc_support_t support;
 extern rcl_allocator_t allocator;

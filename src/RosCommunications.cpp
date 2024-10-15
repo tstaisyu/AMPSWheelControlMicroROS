@@ -22,7 +22,6 @@ rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
-sensor_msgs__msg__Imu imu_msg;
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -119,6 +118,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   M5.Lcd.setCursor(0, 0);
   M5.Lcd.print("Timer callback triggered");
   nav_msgs__msg__Odometry vel_msg;
+  sensor_msgs__msg__Imu imu_msg;
 
   vel_msg.twist.twist.linear.x = 0.0;
   vel_msg.twist.twist.linear.y = 0.0;
