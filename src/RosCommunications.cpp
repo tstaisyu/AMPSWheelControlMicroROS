@@ -117,7 +117,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
-  nav_msgs__msg__Odometry vel_msg;
+  geometry_msgs__msg__Twist vel_msg;
   sensor_msgs__msg__Imu imu_msg;
 
   vel_msg.twist.twist.linear.x = 0.0;
