@@ -114,7 +114,7 @@ void subscription_callback(const void * msgin) {
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
-  M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
+//  M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
   geometry_msgs__msg__TwistStamped vel_msg;
@@ -162,7 +162,24 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       #elif defined(RIGHT_WHEEL)
       vel_msg.twist.twist.linear.x = wheelSpeed;
       #endif
-
+/*
+      // LCDに値を表示
+      M5.Lcd.clear();  // 画面をクリア
+      M5.Lcd.setCursor(0, 0);
+      M5.Lcd.print("Timer Callback Triggered");
+      M5.Lcd.setCursor(0, 20);
+      M5.Lcd.printf("Linear X: %f", vel_msg.twist.linear.x);
+      M5.Lcd.setCursor(0, 40);
+      M5.Lcd.printf("Linear Y: %f", vel_msg.twist.linear.y);
+      M5.Lcd.setCursor(0, 60);
+      M5.Lcd.printf("Linear Z: %f", vel_msg.twist.linear.z);
+      M5.Lcd.setCursor(0, 80);
+      M5.Lcd.printf("Angular X: %f", vel_msg.twist.angular.x);
+      M5.Lcd.setCursor(0, 100);
+      M5.Lcd.printf("Angular Y: %f", vel_msg.twist.angular.y);
+      M5.Lcd.setCursor(0, 120);
+      M5.Lcd.printf("Angular Z: %f", vel_msg.twist.angular.z);
+*/
       static char frame_id_buffer[256]; // 十分なサイズを確保
       vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
 
