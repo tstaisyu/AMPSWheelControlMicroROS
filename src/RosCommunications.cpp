@@ -17,6 +17,8 @@
 #include "MotorController.h"
 #include "DisplayManager.h"
 #include "SerialManager.h"
+#include "SystemManager.h"
+#include "IMUManager.h"
 
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
@@ -133,26 +135,29 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       Serial.println("Failed to get current time");
   } else {
       // Read IMU data
-      float ax, ay, az, gx, gy, gz;
-      M5.Imu.getAccelData(&ax, &ay, &az);
-      M5.Imu.getGyroData(&gx, &gy, &gz);
+    #ifdef LEFT_WHEEL
+    if (imuManager.update()) {
+        float ax, ay, az, gx, gy, gz;
+        imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
 
-      // IMUメッセージのタイムスタンプを設定
-      imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
-      imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
-      imu_msg.linear_acceleration.x = ax * GRAVITY;
-      imu_msg.linear_acceleration.y = ay * GRAVITY;
-      imu_msg.linear_acceleration.z = az * GRAVITY;
-      imu_msg.angular_velocity.x = gx;
-      imu_msg.angular_velocity.y = gy;
-      imu_msg.angular_velocity.z = gz;
+        // IMUメッセージのタイムスタンプを設定
+        imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
+        imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
+        imu_msg.linear_acceleration.x = ax * GRAVITY;
+        imu_msg.linear_acceleration.y = ay * GRAVITY;
+        imu_msg.linear_acceleration.z = az * GRAVITY;
+        imu_msg.angular_velocity.x = gx;
+        imu_msg.angular_velocity.y = gy;
+        imu_msg.angular_velocity.z = gz;
 
-      // IMUデータの表示
-//      M5.Lcd.setCursor(0, 20);
-//      M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
-//      M5.Lcd.setCursor(0, 40);
-//      M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);            
-      
+        // IMUデータの表示
+//        M5.Lcd.setCursor(0, 20);
+//        M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
+//        M5.Lcd.setCursor(0, 40);
+//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);            
+    }
+    #endif
+
       // Read wheel speed data
       float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
       vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
@@ -160,7 +165,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       #ifdef LEFT_WHEEL
       vel_msg.twist.linear.x = -wheelSpeed;
       #elif defined(RIGHT_WHEEL)
-      vel_msg.twist.twist.linear.x = wheelSpeed;
+      vel_msg.twist.linear.x = wheelSpeed;
       #endif
 /*
       // LCDに値を表示
