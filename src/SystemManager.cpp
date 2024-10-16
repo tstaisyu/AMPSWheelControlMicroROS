@@ -20,6 +20,7 @@
 void setupM5stack() {
   M5.begin();
   delay(500);
+  M5.Imu.Init();
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
 }
