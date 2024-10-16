@@ -16,6 +16,10 @@
 #ifndef SETUP_M5STACK_H
 #define SETUP_M5STACK_H
 
+#include "IMUManager.h"
+
+extern IMUManager imuManager;
+
 void setupM5stack();
 void checkDataTimeout();
 
