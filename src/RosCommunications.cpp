@@ -157,7 +157,11 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
       vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
       vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
+      #ifdef LEFT_WHEEL
+      vel_msg.twist.twist.linear.x = (-1) * wheelSpeed;
+      #elif defined(RIGHT_WHEEL)
       vel_msg.twist.twist.linear.x = wheelSpeed;
+      #endif
 
       static char frame_id_buffer[256]; // 十分なサイズを確保
       vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
