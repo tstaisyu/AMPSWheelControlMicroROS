@@ -61,7 +61,7 @@ void setupMicroROS() {
   RCCHECK(rclc_publisher_init_best_effort(
       &vel_publisher,
       &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
       "/left_vel"
   ));
   #elif defined(RIGHT_WHEEL)
@@ -69,7 +69,7 @@ void setupMicroROS() {
   RCCHECK(rclc_publisher_init_best_effort(
       &vel_publisher,
       &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
       "/right_vel"
   ));
   #endif
