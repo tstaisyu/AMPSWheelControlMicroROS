@@ -117,15 +117,15 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
-  geometry_msgs__msg__Twist vel_msg;
+  geometry_msgs__msg__TwistStamped vel_msg;
   sensor_msgs__msg__Imu imu_msg;
 
-  vel_msg.twist.twist.linear.x = 0.0;
-  vel_msg.twist.twist.linear.y = 0.0;
-  vel_msg.twist.twist.linear.z = 0.0;
-  vel_msg.twist.twist.angular.x = 0.0;
-  vel_msg.twist.twist.angular.y = 0.0;
-  vel_msg.twist.twist.angular.z = 0.0;
+  vel_msg.twist.linear.x = 0.0;
+  vel_msg.twist.linear.y = 0.0;
+  vel_msg.twist.linear.z = 0.0;
+  vel_msg.twist.angular.x = 0.0;
+  vel_msg.twist.angular.y = 0.0;
+  vel_msg.twist.angular.z = 0.0;
 
   rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
   if (rc != RCL_RET_OK) {
@@ -158,7 +158,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
       vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
       #ifdef LEFT_WHEEL
-      vel_msg.twist.twist.linear.x = (-1) * wheelSpeed;
+      vel_msg.twist.linear.x = -wheelSpeed;
       #elif defined(RIGHT_WHEEL)
       vel_msg.twist.twist.linear.x = wheelSpeed;
       #endif
