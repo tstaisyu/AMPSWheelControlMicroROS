@@ -189,9 +189,9 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
 
       #ifdef LEFT_WHEEL
-      const char* frame_id = "left_wheel";
+      const char* frame_id = "l_w";
       #elif defined(RIGHT_WHEEL)
-      const char* frame_id = "right_wheel";
+      const char* frame_id = "r_w";
       #endif
       strncpy(vel_msg.header.frame_id.data, frame_id, sizeof(vel_msg.header.frame_id.data));
       vel_msg.header.frame_id.size = strlen(frame_id);
