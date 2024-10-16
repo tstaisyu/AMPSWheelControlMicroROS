@@ -13,3 +13,28 @@
  * limitations under the License.
  */
 
+#ifndef IMU_MANAGER_H
+#define IMU_MANAGER_H
+
+#include <M5Stack.h>
+
+class IMUManager {
+public:
+    IMUManager();
+    void initialize();
+    bool update();
+    void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
+
+private:
+    float ax, ay, az; // 加速度センサのデータ
+    float gx, gy, gz; // ジャイロセンサのデータ
+    float accOffset[3], gyroOffset[3]; // キャリブレーションオフセット
+
+    float lpf_beta; // フィルタの係数
+    float accX_filtered, accY_filtered, accZ_filtered, gyroX_filtered, gyroY_filtered, gyroZ_filtered; // フィルタリングされたデータ
+
+    void calibrateSensors(); // センサのキャリブレーションを行う
+    void applyLowPassFilter(); // ローパスフィルタを適用する
+};
+
+#endif // IMU_MANAGER_H
