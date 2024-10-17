@@ -86,16 +86,16 @@ void setupMicroROS() {
   vel_msg.twist.angular.y = 0.0;
   vel_msg.twist.angular.z = 0.0;
 
-  static char frame_id_buffer[256]; // 十分なサイズを確保
-  vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
+  static char vel_frame_id_buffer[256]; // 十分なサイズを確保
+  vel_msg.header.frame_id.data = vel_frame_id_buffer; // ポインタをバッファに設定
 
   #ifdef LEFT_WHEEL
-  const char* frame_id = "l_w";
+  const char* vel_frame_id = "l_w";
   #elif defined(RIGHT_WHEEL)
-  const char* frame_id = "r_w";
+  const char* vel_frame_id = "r_w";
   #endif
-  strncpy(vel_msg.header.frame_id.data, frame_id, sizeof(vel_msg.header.frame_id.data));
-  vel_msg.header.frame_id.size = strlen(frame_id);
+  strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
+  vel_msg.header.frame_id.size = strlen(vel_frame_id);
 
 
   #ifdef LEFT_WHEEL
@@ -130,6 +130,13 @@ void setupMicroROS() {
   imu_msg.linear_acceleration_covariance[6] = 0.0;
   imu_msg.linear_acceleration_covariance[7] = 0.0;
   imu_msg.linear_acceleration_covariance[8] = 0.0004;  // z軸の分散
+
+  static char imu_frame_id_buffer[256];
+  imu_msg.header.frame_id.data = imu_frame_id_buffer; // ポインタをバッファに設定
+
+  const char* imu_frame_id = "l_M5";
+  strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
+  imu_msg.header.frame_id.size = strlen(imu_frame_id);
 
   #endif
 
