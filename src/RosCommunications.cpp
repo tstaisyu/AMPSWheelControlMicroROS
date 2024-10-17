@@ -22,6 +22,7 @@
 
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
+sensor_msgs__msg__Imu imu_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 rclc_executor_t executor;
@@ -84,6 +85,31 @@ void setupMicroROS() {
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
       "/left_wheel_imu"
   ));
+
+  imu_msg.orientation_covariance[0] = -1;
+
+  // 角速度の共分散行列設定
+  imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
+  imu_msg.angular_velocity_covariance[1] = 0.0;
+  imu_msg.angular_velocity_covariance[2] = 0.0;
+  imu_msg.angular_velocity_covariance[3] = 0.0;
+  imu_msg.angular_velocity_covariance[4] = 0.0025;  // y軸の分散
+  imu_msg.angular_velocity_covariance[5] = 0.0;
+  imu_msg.angular_velocity_covariance[6] = 0.0;
+  imu_msg.angular_velocity_covariance[7] = 0.0;
+  imu_msg.angular_velocity_covariance[8] = 0.0025;  // z軸の分散
+
+  // 線形加速度の共分散行列設定
+  imu_msg.linear_acceleration_covariance[0] = 0.0004;  // x軸の分散
+  imu_msg.linear_acceleration_covariance[1] = 0.0;
+  imu_msg.linear_acceleration_covariance[2] = 0.0;
+  imu_msg.linear_acceleration_covariance[3] = 0.0;
+  imu_msg.linear_acceleration_covariance[4] = 0.0004;  // y軸の分散
+  imu_msg.linear_acceleration_covariance[5] = 0.0;
+  imu_msg.linear_acceleration_covariance[6] = 0.0;
+  imu_msg.linear_acceleration_covariance[7] = 0.0;
+  imu_msg.linear_acceleration_covariance[8] = 0.0004;  // z軸の分散
+
   #endif
 
   // タイマーの初期化
@@ -120,7 +146,6 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
   geometry_msgs__msg__TwistStamped vel_msg;
-  sensor_msgs__msg__Imu imu_msg;
 
   vel_msg.twist.linear.x = 0.0;
   vel_msg.twist.linear.y = 0.0;
@@ -149,29 +174,6 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.angular_velocity.x = gx * DEG2RAD;
         imu_msg.angular_velocity.y = gy * DEG2RAD;
         imu_msg.angular_velocity.z = gz * DEG2RAD;
-        imu_msg.orientation_covariance[0] = -1;
-
-        // 角速度の共分散行列設定
-        imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
-        imu_msg.angular_velocity_covariance[1] = 0.0;
-        imu_msg.angular_velocity_covariance[2] = 0.0;
-        imu_msg.angular_velocity_covariance[3] = 0.0;
-        imu_msg.angular_velocity_covariance[4] = 0.0025;  // y軸の分散
-        imu_msg.angular_velocity_covariance[5] = 0.0;
-        imu_msg.angular_velocity_covariance[6] = 0.0;
-        imu_msg.angular_velocity_covariance[7] = 0.0;
-        imu_msg.angular_velocity_covariance[8] = 0.0025;  // z軸の分散
-
-        // 線形加速度の共分散行列設定
-        imu_msg.linear_acceleration_covariance[0] = 0.0004;  // x軸の分散
-        imu_msg.linear_acceleration_covariance[1] = 0.0;
-        imu_msg.linear_acceleration_covariance[2] = 0.0;
-        imu_msg.linear_acceleration_covariance[3] = 0.0;
-        imu_msg.linear_acceleration_covariance[4] = 0.0004;  // y軸の分散
-        imu_msg.linear_acceleration_covariance[5] = 0.0;
-        imu_msg.linear_acceleration_covariance[6] = 0.0;
-        imu_msg.linear_acceleration_covariance[7] = 0.0;
-        imu_msg.linear_acceleration_covariance[8] = 0.0004;  // z軸の分散
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
