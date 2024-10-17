@@ -22,6 +22,7 @@
 
 rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
+geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
@@ -76,6 +77,26 @@ void setupMicroROS() {
       "/right_vel"
   ));
   #endif
+
+
+  vel_msg.twist.linear.x = 0.0;
+  vel_msg.twist.linear.y = 0.0;
+  vel_msg.twist.linear.z = 0.0;
+  vel_msg.twist.angular.x = 0.0;
+  vel_msg.twist.angular.y = 0.0;
+  vel_msg.twist.angular.z = 0.0;
+
+  static char frame_id_buffer[256]; // 十分なサイズを確保
+  vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
+
+  #ifdef LEFT_WHEEL
+  const char* frame_id = "l_w";
+  #elif defined(RIGHT_WHEEL)
+  const char* frame_id = "r_w";
+  #endif
+  strncpy(vel_msg.header.frame_id.data, frame_id, sizeof(vel_msg.header.frame_id.data));
+  vel_msg.header.frame_id.size = strlen(frame_id);
+
 
   #ifdef LEFT_WHEEL
   // Initialize IMU data publisher for left wheel
@@ -145,14 +166,6 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
 //  M5.Lcd.clear();
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
-  geometry_msgs__msg__TwistStamped vel_msg;
-
-  vel_msg.twist.linear.x = 0.0;
-  vel_msg.twist.linear.y = 0.0;
-  vel_msg.twist.linear.z = 0.0;
-  vel_msg.twist.angular.x = 0.0;
-  vel_msg.twist.angular.y = 0.0;
-  vel_msg.twist.angular.z = 0.0;
 
   rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
   if (rc != RCL_RET_OK) {
@@ -209,16 +222,6 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       M5.Lcd.setCursor(0, 120);
       M5.Lcd.printf("Angular Z: %f", vel_msg.twist.angular.z);
 */
-      static char frame_id_buffer[256]; // 十分なサイズを確保
-      vel_msg.header.frame_id.data = frame_id_buffer; // ポインタをバッファに設定
-
-      #ifdef LEFT_WHEEL
-      const char* frame_id = "l_w";
-      #elif defined(RIGHT_WHEEL)
-      const char* frame_id = "r_w";
-      #endif
-      strncpy(vel_msg.header.frame_id.data, frame_id, sizeof(vel_msg.header.frame_id.data));
-      vel_msg.header.frame_id.size = strlen(frame_id);
   }
 
   // Publish IMU and velocity data
