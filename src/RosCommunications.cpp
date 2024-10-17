@@ -116,7 +116,7 @@ void subscription_callback(const void * msgin) {
 
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
   RCLC_UNUSED(last_call_time);
-//  M5.Lcd.clear();  // 画面をクリアして新しい情報を表示するため
+//  M5.Lcd.clear();
 //  M5.Lcd.setCursor(0, 0);
 //  M5.Lcd.print("Timer callback triggered");
   geometry_msgs__msg__TwistStamped vel_msg;
@@ -168,8 +168,7 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       vel_msg.twist.linear.x = wheelSpeed;
       #endif
 /*
-      // LCDに値を表示
-      M5.Lcd.clear();  // 画面をクリア
+      M5.Lcd.clear();
       M5.Lcd.setCursor(0, 0);
       M5.Lcd.print("Timer Callback Triggered");
       M5.Lcd.setCursor(0, 20);
