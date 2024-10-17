@@ -28,6 +28,7 @@
 #include <sensor_msgs/msg/imu.h>
 
 #define GRAVITY 9.81f
+#define DEG2RAD 0.0174533f
 
 extern rcl_subscription_t subscriber;
 extern geometry_msgs__msg__Twist msg_sub;

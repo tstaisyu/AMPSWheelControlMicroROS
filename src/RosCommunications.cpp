@@ -146,9 +146,9 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.linear_acceleration.x = ax * GRAVITY;
         imu_msg.linear_acceleration.y = ay * GRAVITY;
         imu_msg.linear_acceleration.z = az * GRAVITY;
-        imu_msg.angular_velocity.x = gx;
-        imu_msg.angular_velocity.y = gy;
-        imu_msg.angular_velocity.z = gz;
+        imu_msg.angular_velocity.x = gx * DEG2RAD;
+        imu_msg.angular_velocity.y = gy * DEG2RAD;
+        imu_msg.angular_velocity.z = gz * DEG2RAD;
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
