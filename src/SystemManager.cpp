@@ -23,7 +23,9 @@ IMUManager imuManager;
 void setupM5stack() {
   M5.begin();
   delay(500);
+  #ifdef LEFT_WHEEL  
   imuManager.initialize();
+  #endif
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
 }
