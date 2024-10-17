@@ -150,6 +150,10 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.angular_velocity.y = gy * DEG2RAD;
         imu_msg.angular_velocity.z = gz * DEG2RAD;
         imu_msg.orientation_covariance[0] = -1;
+        for (int i = 0; i < 9; i += 4) {
+            imu_msg.linear_acceleration_covariance[i] = 0.02 * 0.02;
+            imu_msg.angular_velocity_covariance[i] = 0.05 * 0.05;
+        }
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
