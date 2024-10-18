@@ -24,25 +24,29 @@ IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0
 
 void IMUManager::initialize() {
     M5.IMU.Init();
+/*    
     compass = BMM150Compass();
 
     // センサーの初期化
-    if (compass.initialize() != BMM150_OK)
+    while (compass.initialize() != BMM150_OK)
     {
-        Serial.println("BMM150 initialization failed!");
-        while (1)
-        ; // 初期化に失敗した場合は無限ループ
+        M5.Lcd.setCursor(0, 0);    
+        M5.Lcd.printf("BMM150 initialization failed! Retrying...");
+        delay(1000); // 1秒待って再試行
     }
-    Serial.println("BMM150 initialized successfully.");
+    M5.Lcd.setCursor(0, 10);
+    M5.Lcd.printf("BMM150 initialized successfully.");
 
     // オフセットの読み込み
     compass.offset_load();
 
     // キャリブレーションの実行（10秒間）
-    Serial.println("Starting calibration...");
+    M5.Lcd.setCursor(0, 30);    
+    M5.Lcd.printf("Starting calibration...");
     compass.calibrate(10000);
-    Serial.println("Calibration complete.");
-
+    M5.Lcd.setCursor(0, 40);
+    M5.Lcd.printf("Calibration complete.");
+*/
     calibrateSensors();
 }
 
@@ -62,10 +66,10 @@ bool IMUManager::update() {
     gz -= gyroOffset[2];
 
     applyLowPassFilter();
-
+/*
     // 地磁気データを更新
     updateMagneticField();
-    
+*/    
     return true;
 }
 
@@ -79,6 +83,7 @@ void IMUManager::updateMagneticField() {
     mz = mag_data[2];
 
     // LCDに表示
+    M5.Lcd.clear();
     M5.Lcd.setCursor(0, 60);
     M5.Lcd.printf("X: %d", mag_data[0]);
     M5.Lcd.setCursor(0, 80);
