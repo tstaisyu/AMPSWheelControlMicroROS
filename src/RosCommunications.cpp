@@ -107,7 +107,16 @@ void setupMicroROS() {
       "/left_wheel_imu"
   ));
 
-  imu_msg.orientation_covariance[0] = -1;
+  // 姿勢の共分散行列設定
+  imu_msg.orientation_covariance[0] = 0.0025; // x軸の分散
+  imu_msg.orientation_covariance[1] = 0.0;
+  imu_msg.orientation_covariance[2] = 0.0;
+  imu_msg.orientation_covariance[3] = 0.0;
+  imu_msg.orientation_covariance[4] = 0.0025; // y軸の分散
+  imu_msg.orientation_covariance[5] = 0.0;
+  imu_msg.orientation_covariance[6] = 0.0;
+  imu_msg.orientation_covariance[7] = 0.0;
+  imu_msg.orientation_covariance[8] = 0.0025; // z軸の分散
 
   // 角速度の共分散行列設定
   imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
@@ -182,8 +191,8 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       // Read IMU data
     #ifdef LEFT_WHEEL
     if (imuManager.update()) {
-        float ax, ay, az, gx, gy, gz;
-        imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
+        float ax, ay, az, gx, gy, gz, mx, my, mz;
+        imuManager.getCalibratedData(ax, ay, az, gx, gy, gz, mx, my, mz);
 
         // IMUメッセージのタイムスタンプを設定
         imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
@@ -194,6 +203,10 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.angular_velocity.x = gx * DEG2RAD;
         imu_msg.angular_velocity.y = gy * DEG2RAD;
         imu_msg.angular_velocity.z = gz * DEG2RAD;
+        imu_msg.orientation.x = 0.1;
+        imu_msg.orientation.y = 0.1;
+        imu_msg.orientation.z = 0.1;
+        imu_msg.orientation.w = 0.1;
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
