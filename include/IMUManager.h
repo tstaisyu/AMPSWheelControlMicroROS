@@ -23,11 +23,12 @@ public:
     IMUManager();
     void initialize();
     bool update();
-    void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
+    void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz, float &mX, float &mY, float &mZ);
 
 private:
     float ax, ay, az; // 加速度センサのデータ
     float gx, gy, gz; // ジャイロセンサのデータ
+    float mx, my, mz;  // 地磁気データ
     float accOffset[3], gyroOffset[3]; // キャリブレーションオフセット
 
     float lpf_beta; // フィルタの係数
@@ -35,6 +36,7 @@ private:
 
     void calibrateSensors(); // センサのキャリブレーションを行う
     void applyLowPassFilter(); // ローパスフィルタを適用する
+    void updateMagneticField();
 };
 
 #endif // IMU_MANAGER_H
