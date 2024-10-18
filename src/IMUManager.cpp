@@ -14,6 +14,9 @@
  */
 
 #include "IMUManager.h"
+#include <BMM150Compass.h>
+
+BMM150Compass compass;
 
 IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0) {
     // 初期化処理
@@ -21,10 +24,30 @@ IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0
 
 void IMUManager::initialize() {
     M5.IMU.Init();
+    compass = BMM150Compass();
+
+    // センサーの初期化
+    if (compass.initialize() != BMM150_OK)
+    {
+        Serial.println("BMM150 initialization failed!");
+        while (1)
+        ; // 初期化に失敗した場合は無限ループ
+    }
+    Serial.println("BMM150 initialized successfully.");
+
+    // オフセットの読み込み
+    compass.offset_load();
+
+    // キャリブレーションの実行（10秒間）
+    Serial.println("Starting calibration...");
+    compass.calibrate(10000);
+    Serial.println("Calibration complete.");
+
     calibrateSensors();
 }
 
 bool IMUManager::update() {
+    
     // IMUからデータを読み取る
     M5.IMU.getAccelData(&ax, &ay, &az);
     M5.IMU.getGyroData(&gx, &gy, &gz);
@@ -40,7 +63,20 @@ bool IMUManager::update() {
 
     applyLowPassFilter();
 
+    // 地磁気データを更新
+    updateMagneticField();
+    
     return true;
+}
+
+void IMUManager::updateMagneticField() {
+    int16_t mag_data[3];
+    compass.getXYZ(mag_data);  // 地磁気データを取得
+
+    // 地磁気データをフィルタリング
+    mx = mag_data[0];
+    my = mag_data[1];
+    mz = mag_data[2];
 }
 
 void IMUManager::applyLowPassFilter() {
@@ -53,13 +89,16 @@ void IMUManager::applyLowPassFilter() {
     gyroZ_filtered = gyroZ_filtered + lpf_beta * (gz - gyroZ_filtered);
 }
 
-void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ) {
+void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ, float &mX, float &mY, float &mZ) {
     aX = accX_filtered;
     aY = accY_filtered;
     aZ = accZ_filtered;
     gX = gyroX_filtered;
     gY = gyroY_filtered;
     gZ = gyroZ_filtered;
+    mX = mx;
+    mY = my;
+    mZ = mz;    
 }
 
 void IMUManager::calibrateSensors() {
