@@ -77,6 +77,15 @@ void IMUManager::updateMagneticField() {
     mx = mag_data[0];
     my = mag_data[1];
     mz = mag_data[2];
+
+    // LCDに表示
+    M5.Lcd.setCursor(0, 60);
+    M5.Lcd.printf("X: %d", mag_data[0]);
+    M5.Lcd.setCursor(0, 80);
+    M5.Lcd.printf("Y: %d", mag_data[1]);
+    M5.Lcd.setCursor(0, 100);
+    M5.Lcd.printf("Z: %d", mag_data[2]);
+
 }
 
 void IMUManager::applyLowPassFilter() {
