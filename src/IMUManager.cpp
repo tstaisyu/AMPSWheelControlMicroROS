@@ -55,7 +55,7 @@ bool IMUManager::update() {
     // IMUからデータを読み取る
     M5.IMU.getAccelData(&ax, &ay, &az);
     M5.IMU.getGyroData(&gx, &gy, &gz);
-    M5.IMU.getAhrsData(&mx, &my, &mz);
+//    M5.IMU.getAhrsData(&mx, &my, &mz);
 
     // オフセット適用
     ax -= accOffset[0];
@@ -111,7 +111,14 @@ void IMUManager::applyLowPassFilter() {
     ahrsZ_filtered = ahrsZ_filtered + lpf_beta * (mz - ahrsZ_filtered);
 */}
 
+// Ahrsを使用しない場合
+void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ) {
+
+/*
+// Ahrsを使用する場合
 void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ, float &mX, float &mY, float &mZ) {
+*/
+
     aX = accX_filtered;
     aY = accY_filtered;
     aZ = accZ_filtered;
