@@ -23,7 +23,14 @@ public:
     IMUManager();
     void initialize();
     bool update();
+
+    // Ahrsを使用しない場合
+    void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
+
+/*
+    // Ahrsを使用する場合
     void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz, float &mx, float &my, float &mz);
+*/
 
 private:
     float ax, ay, az; // 加速度センサのデータ
