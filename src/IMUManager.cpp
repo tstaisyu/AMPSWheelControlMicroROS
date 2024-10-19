@@ -65,11 +65,11 @@ bool IMUManager::update() {
     gx -= gyroOffset[0];
     gy -= gyroOffset[1];
     gz -= gyroOffset[2];
-
+/*
     mx -= ahrsOffset[0];
     my -= ahrsOffset[1];
     mz -= ahrsOffset[2];
-
+*/
     applyLowPassFilter();
 /*
     // 地磁気データを更新
@@ -106,10 +106,10 @@ void IMUManager::applyLowPassFilter() {
     gyroX_filtered = gyroX_filtered + lpf_beta * (gx - gyroX_filtered);
     gyroY_filtered = gyroY_filtered + lpf_beta * (gy - gyroY_filtered);
     gyroZ_filtered = gyroZ_filtered + lpf_beta * (gz - gyroZ_filtered);
-    ahrsX_filtered = ahrsX_filtered + lpf_beta * (mx - ahrsX_filtered);
+/*    ahrsX_filtered = ahrsX_filtered + lpf_beta * (mx - ahrsX_filtered);
     ahrsY_filtered = ahrsY_filtered + lpf_beta * (my - ahrsY_filtered);
     ahrsZ_filtered = ahrsZ_filtered + lpf_beta * (mz - ahrsZ_filtered);
-}
+*/}
 
 void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ, float &mX, float &mY, float &mZ) {
     aX = accX_filtered;
@@ -118,10 +118,10 @@ void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, f
     gX = gyroX_filtered;
     gY = gyroY_filtered;
     gZ = gyroZ_filtered;
-    mX = ahrsX_filtered;
+/*    mX = ahrsX_filtered;
     mY = ahrsY_filtered;
     mZ = ahrsZ_filtered; 
-}
+*/}
 
 void IMUManager::calibrateSensors() {
     float sumAx = 0, sumAy = 0, sumAz = 0;
@@ -150,7 +150,7 @@ void IMUManager::calibrateSensors() {
     gyroOffset[0] = sumGx / samples;
     gyroOffset[1] = sumGy / samples;
     gyroOffset[2] = sumGz / samples;
-    ahrsOffset[0] = sumMx / samples;
+/*    ahrsOffset[0] = sumMx / samples;
     ahrsOffset[1] = sumMy / samples;
     ahrsOffset[2] = sumMz / samples;
-}
+*/}
