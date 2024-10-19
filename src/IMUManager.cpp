@@ -18,7 +18,7 @@
 
 BMM150Compass compass;
 
-IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0) {
+IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0), ahrsX_filtered(0.0) {
     // 初期化処理
 }
 
@@ -55,6 +55,7 @@ bool IMUManager::update() {
     // IMUからデータを読み取る
     M5.IMU.getAccelData(&ax, &ay, &az);
     M5.IMU.getGyroData(&gx, &gy, &gz);
+    M5.IMU.getAhrsData(&mx, &my, &mz);
 
     // オフセット適用
     ax -= accOffset[0];
@@ -64,6 +65,10 @@ bool IMUManager::update() {
     gx -= gyroOffset[0];
     gy -= gyroOffset[1];
     gz -= gyroOffset[2];
+
+    mx -= ahrsOffset[0];
+    my -= ahrsOffset[1];
+    mz -= ahrsOffset[2];
 
     applyLowPassFilter();
 /*
@@ -101,6 +106,9 @@ void IMUManager::applyLowPassFilter() {
     gyroX_filtered = gyroX_filtered + lpf_beta * (gx - gyroX_filtered);
     gyroY_filtered = gyroY_filtered + lpf_beta * (gy - gyroY_filtered);
     gyroZ_filtered = gyroZ_filtered + lpf_beta * (gz - gyroZ_filtered);
+    ahrsX_filtered = ahrsX_filtered + lpf_beta * (mx - ahrsX_filtered);
+    ahrsY_filtered = ahrsY_filtered + lpf_beta * (my - ahrsY_filtered);
+    ahrsZ_filtered = ahrsZ_filtered + lpf_beta * (mz - ahrsZ_filtered);
 }
 
 void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ, float &mX, float &mY, float &mZ) {
@@ -110,24 +118,29 @@ void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, f
     gX = gyroX_filtered;
     gY = gyroY_filtered;
     gZ = gyroZ_filtered;
-    mX = mx;
-    mY = my;
-    mZ = mz;    
+    mX = ahrsX_filtered;
+    mY = ahrsY_filtered;
+    mZ = ahrsZ_filtered; 
 }
 
 void IMUManager::calibrateSensors() {
     float sumAx = 0, sumAy = 0, sumAz = 0;
     float sumGx = 0, sumGy = 0, sumGz = 0;
+    float sumMx = 0, sumMy = 0, sumMz = 0;    
     const int samples = 500;
     for (int i = 0; i < samples; i++) {
         M5.IMU.getAccelData(&ax, &ay, &az);
         M5.IMU.getGyroData(&gx, &gy, &gz);
+        M5.IMU.getAhrsData(&mx, &my, &mz);
         sumAx += ax;
         sumAy += ay;
         sumAz += az;
         sumGx += gx;
         sumGy += gy;
         sumGz += gz;
+        sumMx += mx;
+        sumMy += my;
+        sumMz += mz;
         delay(2);
     }
 
@@ -137,4 +150,7 @@ void IMUManager::calibrateSensors() {
     gyroOffset[0] = sumGx / samples;
     gyroOffset[1] = sumGy / samples;
     gyroOffset[2] = sumGz / samples;
+    ahrsOffset[0] = sumMx / samples;
+    ahrsOffset[1] = sumMy / samples;
+    ahrsOffset[2] = sumMz / samples;
 }
