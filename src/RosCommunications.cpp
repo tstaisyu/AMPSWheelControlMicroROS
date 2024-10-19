@@ -212,7 +212,9 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
 //        M5.Lcd.setCursor(0, 20);
 //        M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
 //        M5.Lcd.setCursor(0, 40);
-//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);            
+//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);
+        M5.Lcd.setCursor(0, 60);
+        M5.Lcd.printf("Ahrs: %.8f, %.8f, %.8f", mx, my, mz);              
     }
     #endif
 
