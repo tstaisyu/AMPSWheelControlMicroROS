@@ -26,6 +26,7 @@ public:
 
     // Ahrsを使用しない場合
     void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
+    void getQuaternion(float& qw, float& qx, float& qy, float& qz);
 
 /*
     // Ahrsを使用する場合
@@ -33,6 +34,8 @@ public:
 */
 
 private:
+    Madgwick filter;
+
     float ax, ay, az; // 加速度センサのデータ
     float gx, gy, gz; // ジャイロセンサのデータ
     float mx, my, mz;  // 地磁気データ

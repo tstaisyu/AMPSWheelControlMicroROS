@@ -17,7 +17,6 @@
 #include "MadgwickAHRS.h"
 #include <BMM150Compass.h>
 
-Madgwick filter;
 BMM150Compass compass;
 
 const float sampleFreq = 256.0f;  // サンプルレート（Hz）
@@ -168,3 +167,8 @@ void IMUManager::calibrateSensors() {
     ahrsOffset[1] = sumMy / samples;
     ahrsOffset[2] = sumMz / samples;
 */}
+
+void IMUManager::getQuaternion(float& qw, float& qx, float& qy, float& qz) {
+    // Madgwickフィルタからクォータニオンを取得
+    filter.getQuaternion(&qw, &qx, &qy, &qz);
+}
