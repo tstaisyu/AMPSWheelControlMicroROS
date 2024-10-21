@@ -36,6 +36,7 @@ private:
     float ax, ay, az; // 加速度センサのデータ
     float gx, gy, gz; // ジャイロセンサのデータ
     float mx, my, mz;  // 地磁気データ
+    float roll, pitch, yaw; // オイラー角
     float accOffset[3], gyroOffset[3], ahrsOffset[3]; // キャリブレーションオフセット
 
     float lpf_beta; // フィルタの係数
@@ -44,6 +45,7 @@ private:
     void calibrateSensors(); // センサのキャリブレーションを行う
     void applyLowPassFilter(); // ローパスフィルタを適用する
     void updateMagneticField();
+    void getOrientation(float &roll, float &pitch, float &yaw);
 };
 
 #endif // IMU_MANAGER_H
