@@ -14,8 +14,10 @@
  */
 
 #include "IMUManager.h"
+#include "MadgwickAHRS.h"
 #include <BMM150Compass.h>
 
+Madgwick filter;
 BMM150Compass compass;
 
 IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0), ahrsX_filtered(0.0) {
@@ -48,6 +50,7 @@ void IMUManager::initialize() {
     M5.Lcd.printf("Calibration complete.");
 */
     calibrateSensors();
+    filter.begin(100);
 }
 
 bool IMUManager::update() {
@@ -71,6 +74,7 @@ bool IMUManager::update() {
     mz -= ahrsOffset[2];
 */
     applyLowPassFilter();
+    filter.updateIMU(gx, gy, gz, ax, ay, az);    
 /*
     // 地磁気データを更新
     updateMagneticField();
@@ -161,3 +165,9 @@ void IMUManager::calibrateSensors() {
     ahrsOffset[1] = sumMy / samples;
     ahrsOffset[2] = sumMz / samples;
 */}
+
+void IMUManager::getOrientation(float &roll, float &pitch, float &yaw) {
+    roll = filter.getRoll();
+    pitch = filter.getPitch();
+    yaw = filter.getYaw();
+}
