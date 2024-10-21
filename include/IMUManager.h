@@ -26,7 +26,6 @@ public:
 
     // Ahrsを使用しない場合
     void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
-    void getOrientation(float &roll, float &pitch, float &yaw);
 
 /*
     // Ahrsを使用する場合

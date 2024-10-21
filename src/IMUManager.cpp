@@ -20,6 +20,9 @@
 Madgwick filter;
 BMM150Compass compass;
 
+const float sampleFreq = 256.0f;  // サンプルレート（Hz）
+const float beta = 0.1f;  // フィルタの感度
+
 IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0), ahrsX_filtered(0.0) {
     // 初期化処理
 }
@@ -50,7 +53,7 @@ void IMUManager::initialize() {
     M5.Lcd.printf("Calibration complete.");
 */
     calibrateSensors();
-    filter.begin(100);
+    filter.begin(sampleFreq);
 }
 
 bool IMUManager::update() {
@@ -165,9 +168,3 @@ void IMUManager::calibrateSensors() {
     ahrsOffset[1] = sumMy / samples;
     ahrsOffset[2] = sumMz / samples;
 */}
-
-void IMUManager::getOrientation(float &roll, float &pitch, float &yaw) {
-    roll = filter.getRoll();
-    pitch = filter.getPitch();
-    yaw = filter.getYaw();
-}
