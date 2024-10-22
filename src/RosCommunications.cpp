@@ -104,7 +104,7 @@ void setupMicroROS() {
       &imu_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-      "/left_wheel_imu"
+      "/imu/data"
   ));
 
   imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
@@ -145,7 +145,7 @@ void setupMicroROS() {
   static char imu_frame_id_buffer[256];
   imu_msg.header.frame_id.data = imu_frame_id_buffer; // ポインタをバッファに設定
 
-  const char* imu_frame_id = "l_M5";
+  const char* imu_frame_id = "imu";
   strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
   imu_msg.header.frame_id.size = strlen(imu_frame_id);
 
