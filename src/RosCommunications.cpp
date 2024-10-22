@@ -107,10 +107,10 @@ void setupMicroROS() {
       "/left_wheel_imu"
   ));
 
-//  imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
+  imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
 
   // 姿勢の共分散行列設定
-  imu_msg.orientation_covariance[0] = 0.0001; // x軸の分散
+/*  imu_msg.orientation_covariance[0] = 0.0001; // x軸の分散
   imu_msg.orientation_covariance[1] = 0.0;
   imu_msg.orientation_covariance[2] = 0.0;
   imu_msg.orientation_covariance[3] = 0.0;
@@ -119,7 +119,7 @@ void setupMicroROS() {
   imu_msg.orientation_covariance[6] = 0.0;
   imu_msg.orientation_covariance[7] = 0.0;
   imu_msg.orientation_covariance[8] = 0.0001; // z軸の分散
-
+*/
   // 角速度の共分散行列設定
   imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
   imu_msg.angular_velocity_covariance[1] = 0.0;
@@ -195,14 +195,9 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
     if (imuManager.update()) {
 
         // Ahrsを使用しない場合
-        float ax, ay, az, gx, gy, gz, qw, qx, qy, qz;
+        float ax, ay, az, gx, gy, gz;
         imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
-        imuManager.getQuaternion(qw, qx, qy, qz);
-/*
-        // Ahrsを使用する場合
-        float ax, ay, az, gx, gy, gz, mx, my, mz;
-        imuManager.getCalibratedData(ax, ay, az, gx, gy, gz, mx, my, mz);
-*/
+
         // IMUメッセージのタイムスタンプを設定
         imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
         imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
@@ -212,18 +207,16 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.angular_velocity.x = gx * DEG2RAD;
         imu_msg.angular_velocity.y = gy * DEG2RAD;
         imu_msg.angular_velocity.z = gz * DEG2RAD;
-        imu_msg.orientation.x = qx;
-        imu_msg.orientation.y = qy;
-        imu_msg.orientation.z = qz;
-        imu_msg.orientation.w = qw;
+        imu_msg.orientation.x = 0.1;
+        imu_msg.orientation.y = 0.1;
+        imu_msg.orientation.z = 0.1;
+        imu_msg.orientation.w = 0.1;
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
 //        M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
 //        M5.Lcd.setCursor(0, 40);
-//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);
-//        M5.Lcd.setCursor(0, 60);
-//        M5.Lcd.printf("Ahrs: %.8f, %.8f, %.8f", mx, my, mz);              
+//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);      
     }
     #endif
 
