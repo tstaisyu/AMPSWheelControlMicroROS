@@ -17,6 +17,7 @@
 #define IMU_MANAGER_H
 
 #include <M5Stack.h>
+#include "MadgwickAHRS.h"
 
 class IMUManager {
 public:
