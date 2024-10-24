@@ -37,7 +37,8 @@ void setupM5stack() {
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
 
-  Serial.begin(115200);
+  Serial.begin(BAUD_RATE);
+  while (!Serial);  // シリアルポートが開くのを待つ
   
   // Wi-Fi接続
   WiFi.begin(ssid, password);
