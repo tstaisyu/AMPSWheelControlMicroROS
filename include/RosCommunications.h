@@ -26,6 +26,7 @@
 #include <geometry_msgs/msg/twist.h>
 #include <geometry_msgs/msg/twist_stamped.h>
 #include <sensor_msgs/msg/imu.h>
+#include <std_msgs/msg/string.h>
 
 #define GRAVITY 9.81f
 #define DEG2RAD 0.0174533f
