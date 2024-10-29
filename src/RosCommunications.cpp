@@ -34,13 +34,10 @@ rcl_node_t node;
 rcl_timer_t timer;
 rcl_time_point_value_t current_time;
 rcl_clock_t ros_clock;
-rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_default;
 
 void setupMicroROS() {
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
-  custom_qos_profile.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
-  custom_qos_profile.history = RMW_QOS_POLICY_HISTORY_KEEP_ALL;
 
   rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
   if (rc != RCL_RET_OK) {
@@ -112,12 +109,11 @@ void setupMicroROS() {
 
   #ifdef LEFT_WHEEL
   // Initialize IMU data publisher for left wheel
-  RCCHECK(rclc_publisher_init(
+  RCCHECK(rclc_publisher_init_best_effort(
       &imu_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-      "/imu/data",
-      &custom_qos_profile
+      "/imu/data_raw"
   ));
 
   imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
