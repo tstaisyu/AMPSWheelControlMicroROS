@@ -49,6 +49,7 @@ extern rcl_clock_t ros_clock;
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void setupMicroROS();
+void reboot_callback(const void * msgin);
 void subscription_callback(const void * msgin);
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time);
 void handleExecutorSpin();
