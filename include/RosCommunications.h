@@ -31,7 +31,8 @@
 #define GRAVITY 9.81f
 #define DEG2RAD 0.0174533f
 
-extern rcl_subscription_t subscriber;
+extern rcl_subscription_t reboot_subscriber;
+extern rcl_subscription_t cmd_vel_subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
