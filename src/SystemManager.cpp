@@ -19,11 +19,12 @@
 #include "SystemManager.h"
 #include "MotorController.h"
 #include "IMUManager.h"
+#include "config.h"
 
 IMUManager imuManager;
 
-const char* ssid       = "SSID";
-const char* password   = "PASSWORD";
+const char* ssid       = WIFI_SSID;
+const char* password   = WIFI_PASSWORD;
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600 * 9;  // JSTのGMTオフセット
 const int   daylightOffset_sec = 0;
@@ -39,8 +40,7 @@ void setupM5stack() {
 
   Serial.begin(BAUD_RATE);
   while (!Serial);  // シリアルポートが開くのを待つ
-  
-  // Wi-Fi接続
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
