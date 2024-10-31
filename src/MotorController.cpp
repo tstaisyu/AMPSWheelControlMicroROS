@@ -81,10 +81,10 @@ void MotorController::sendCommand(byte motorID, uint16_t address, byte command, 
 void sendMotorCommands(float linearVelocity, float angularVelocity) {
     #ifdef LEFT_WHEEL
     // 左輪用の設定
-    float wheelSpeed = (-1) * (linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2));
+    float wheelSpeed = (-1) * (linearVelocity - (WHEEL_DISTANCE * angularVelocity / 2));
     #elif defined(RIGHT_WHEEL)
     // 右輪用の設定
-    float wheelSpeed = linearVelocity - (WHEEL_DISTANCE * angularVelocity / 2);
+    float wheelSpeed = linearVelocity + (WHEEL_DISTANCE * angularVelocity / 2);
     #endif
 
   int wheelDec = velocityToDEC(wheelSpeed);
