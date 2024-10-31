@@ -14,11 +14,19 @@
  */
 
 #include <M5Stack.h>
+#include <WiFi.h>
+#include "time.h"
 #include "SystemManager.h"
 #include "MotorController.h"
 #include "IMUManager.h"
 
 IMUManager imuManager;
+
+const char* ssid       = "SSID";
+const char* password   = "PASSWORD";
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600 * 9;  // JSTのGMTオフセット
+const int   daylightOffset_sec = 0;
 
 void setupM5stack() {
   M5.begin();
@@ -28,6 +36,27 @@ void setupM5stack() {
   #endif
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
+
+  Serial.begin(BAUD_RATE);
+  while (!Serial);  // シリアルポートが開くのを待つ
+  
+  // Wi-Fi接続
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi connected.");
+
+  // 時刻設定
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+
 }
 
 void checkDataTimeout() {

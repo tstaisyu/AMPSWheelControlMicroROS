@@ -15,6 +15,8 @@
 
 #include "IMUManager.h"
 
+const float sampleFreq = 256.0f;  // サンプルレート（Hz）
+
 IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0) {
     // 初期化処理
 }
@@ -25,6 +27,7 @@ void IMUManager::initialize() {
 }
 
 bool IMUManager::update() {
+    
     // IMUからデータを読み取る
     M5.IMU.getAccelData(&ax, &ay, &az);
     M5.IMU.getGyroData(&gx, &gy, &gz);
@@ -39,7 +42,7 @@ bool IMUManager::update() {
     gz -= gyroOffset[2];
 
     applyLowPassFilter();
-
+  
     return true;
 }
 
@@ -53,6 +56,7 @@ void IMUManager::applyLowPassFilter() {
     gyroZ_filtered = gyroZ_filtered + lpf_beta * (gz - gyroZ_filtered);
 }
 
+// Ahrsを使用しない場合
 void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ) {
     aX = accX_filtered;
     aY = accY_filtered;

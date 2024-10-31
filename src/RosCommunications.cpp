@@ -24,6 +24,7 @@ rcl_subscription_t subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
+//std_msgs__msg__String rbt_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 rclc_executor_t executor;
@@ -37,6 +38,7 @@ rcl_clock_t ros_clock;
 void setupMicroROS() {
 	set_microros_transports();
   allocator = rcl_get_default_allocator();
+
   rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
   if (rc != RCL_RET_OK) {
       Serial.println("Failed to initialize ROS clock");
@@ -60,6 +62,13 @@ void setupMicroROS() {
     "/cmd_vel"
   ));
 
+/*  RCCHECK(rclc_subscription_init_best_effort(
+    &subscriber,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+    "/reboot"
+  ));
+*/
   #ifdef LEFT_WHEEL
   // 左輪用の処理
   RCCHECK(rclc_publisher_init_best_effort(
@@ -104,11 +113,22 @@ void setupMicroROS() {
       &imu_publisher,
       &node,
       ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-      "/left_wheel_imu"
+      "/imu/data_raw"
   ));
 
-  imu_msg.orientation_covariance[0] = -1;
+  imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
 
+  // 姿勢の共分散行列設定
+/*  imu_msg.orientation_covariance[0] = 0.0001; // x軸の分散
+  imu_msg.orientation_covariance[1] = 0.0;
+  imu_msg.orientation_covariance[2] = 0.0;
+  imu_msg.orientation_covariance[3] = 0.0;
+  imu_msg.orientation_covariance[4] = 0.0001; // y軸の分散
+  imu_msg.orientation_covariance[5] = 0.0;
+  imu_msg.orientation_covariance[6] = 0.0;
+  imu_msg.orientation_covariance[7] = 0.0;
+  imu_msg.orientation_covariance[8] = 0.0001; // z軸の分散
+*/
   // 角速度の共分散行列設定
   imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
   imu_msg.angular_velocity_covariance[1] = 0.0;
@@ -134,7 +154,7 @@ void setupMicroROS() {
   static char imu_frame_id_buffer[256];
   imu_msg.header.frame_id.data = imu_frame_id_buffer; // ポインタをバッファに設定
 
-  const char* imu_frame_id = "l_M5";
+  const char* imu_frame_id = "imu";
   strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
   imu_msg.header.frame_id.size = strlen(imu_frame_id);
 
@@ -152,10 +172,18 @@ void setupMicroROS() {
 	int callback_size = 2;	// コールバックを行う数
 	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
+//  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &rbt_msg, &reboot_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 }
-
+/*
+void reboot_callback(const void * msgin) {
+  const std_msgs__msg__String * rbt_msg = (const std_msgs__msg__String *)msgin;
+  if (strcmp(rbt_msg->data.data, "reboot") == 0) {
+    ESP.restart();
+  }
+}
+*/
 void subscription_callback(const void * msgin) {
 
   const geometry_msgs__msg__Twist * msg_sub = (const geometry_msgs__msg__Twist *)msgin;
@@ -182,6 +210,8 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
       // Read IMU data
     #ifdef LEFT_WHEEL
     if (imuManager.update()) {
+
+        // Ahrsを使用しない場合
         float ax, ay, az, gx, gy, gz;
         imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
 
@@ -194,12 +224,16 @@ void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
         imu_msg.angular_velocity.x = gx * DEG2RAD;
         imu_msg.angular_velocity.y = gy * DEG2RAD;
         imu_msg.angular_velocity.z = gz * DEG2RAD;
+        imu_msg.orientation.x = 0.1;
+        imu_msg.orientation.y = 0.1;
+        imu_msg.orientation.z = 0.1;
+        imu_msg.orientation.w = 0.1;
 
         // IMUデータの表示
 //        M5.Lcd.setCursor(0, 20);
 //        M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
 //        M5.Lcd.setCursor(0, 40);
-//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);            
+//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);      
     }
     #endif
 

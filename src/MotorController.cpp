@@ -27,8 +27,6 @@ VelocityCommand currentCommand;
 unsigned long lastReadTime = 0;
 
 void initializeUART() {
-    Serial.begin(BAUD_RATE);
-    while (!Serial);  // シリアルポートが開くのを待つ
     motorSerial.begin(BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
     Serial.println("Setup complete. Ready to read high resolution speed data.");
     initMotor(motorSerial, MOTOR_ID);

@@ -23,9 +23,12 @@ public:
     IMUManager();
     void initialize();
     bool update();
+
+    // Ahrsを使用しない場合
     void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
 
 private:
+
     float ax, ay, az; // 加速度センサのデータ
     float gx, gy, gz; // ジャイロセンサのデータ
     float accOffset[3], gyroOffset[3]; // キャリブレーションオフセット
