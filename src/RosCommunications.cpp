@@ -181,6 +181,7 @@ void setupMicroROS() {
 void reboot_callback(const void * msgin) {
   const std_msgs__msg__String * rbt_msg = (const std_msgs__msg__String *)msgin;
   if (strcmp(rbt_msg->data.data, "reboot") == 0) {
+    delay(5000);
     ESP.restart();
   }
 }
