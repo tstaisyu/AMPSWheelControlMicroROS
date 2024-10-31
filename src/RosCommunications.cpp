@@ -20,11 +20,12 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
-rcl_subscription_t subscriber;
+rcl_subscription_t reboot_subscriber;
+rcl_subscription_t cmd_vel_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
-//std_msgs__msg__String rbt_msg;
+std_msgs__msg__Int32 rbt_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 rclc_executor_t executor;
@@ -56,19 +57,19 @@ void setupMicroROS() {
   #endif
 
   RCCHECK(rclc_subscription_init_best_effort(
-    &subscriber,
+    &cmd_vel_subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
     "/cmd_vel"
   ));
 
-/*  RCCHECK(rclc_subscription_init_best_effort(
-    &subscriber,
+  RCCHECK(rclc_subscription_init_best_effort(
+    &reboot_subscriber,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
     "/reboot"
   ));
-*/
+
   #ifdef LEFT_WHEEL
   // 左輪用の処理
   RCCHECK(rclc_publisher_init_best_effort(
@@ -169,21 +170,29 @@ void setupMicroROS() {
       timer_callback
   ));
 
-	int callback_size = 2;	// コールバックを行う数
+	int callback_size = 3;	// コールバックを行う数
 	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
-//  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &rbt_msg, &reboot_callback, ON_NEW_DATA));
-  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &reboot_subscriber, &rbt_msg, &reboot_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 }
-/*
+
 void reboot_callback(const void * msgin) {
-  const std_msgs__msg__String * rbt_msg = (const std_msgs__msg__String *)msgin;
-  if (strcmp(rbt_msg->data.data, "reboot") == 0) {
+  const std_msgs__msg__Int32 * rbt_msg = (const std_msgs__msg__Int32 *)msgin;
+    M5.Lcd.setCursor(0, 60);
+    M5.Lcd.print("Rebooting...");
+    M5.Lcd.setCursor(0, 80);
+    M5.Lcd.print(rbt_msg->data);
+    Serial.println("Reboot message received: ");
+    Serial.println(rbt_msg->data);
+
+  if (rbt_msg->data == 1) {
+    delay(5000);
     ESP.restart();
   }
 }
-*/
+
 void subscription_callback(const void * msgin) {
 
   const geometry_msgs__msg__Twist * msg_sub = (const geometry_msgs__msg__Twist *)msgin;

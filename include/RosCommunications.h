@@ -26,13 +26,15 @@
 #include <geometry_msgs/msg/twist.h>
 #include <geometry_msgs/msg/twist_stamped.h>
 #include <sensor_msgs/msg/imu.h>
-#include <std_msgs/msg/string.h>
+#include <std_msgs/msg/int32.h>
 
 #define GRAVITY 9.81f
 #define DEG2RAD 0.0174533f
 
-extern rcl_subscription_t subscriber;
+extern rcl_subscription_t reboot_subscriber;
+extern rcl_subscription_t cmd_vel_subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
+extern std_msgs__msg__Int32 rbt_msg;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
 extern rclc_executor_t executor;

@@ -28,5 +28,4 @@ void setup() {
 
 void loop() {
   handleExecutorSpin();
-  checkDataTimeout();
 }
