@@ -25,7 +25,7 @@ rcl_subscription_t cmd_vel_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
-std_msgs__msg__String rbt_msg;
+std_msgs__msg__Int32 rbt_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 rclc_executor_t executor;
@@ -66,7 +66,7 @@ void setupMicroROS() {
   RCCHECK(rclc_subscription_init_best_effort(
     &reboot_subscriber,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
     "/reboot"
   ));
 
@@ -179,8 +179,15 @@ void setupMicroROS() {
 }
 
 void reboot_callback(const void * msgin) {
-  const std_msgs__msg__String * rbt_msg = (const std_msgs__msg__String *)msgin;
-  if (strcmp(rbt_msg->data.data, "reboot") == 0) {
+  const std_msgs__msg__Int32 * rbt_msg = (const std_msgs__msg__Int32 *)msgin;
+    M5.Lcd.setCursor(0, 60);
+    M5.Lcd.print("Rebooting...");
+    M5.Lcd.setCursor(0, 80);
+    M5.Lcd.print(rbt_msg->data);
+    Serial.println("Reboot message received: ");
+    Serial.println(rbt_msg->data);
+
+  if (rbt_msg->data == 1) {
     delay(5000);
     ESP.restart();
   }
