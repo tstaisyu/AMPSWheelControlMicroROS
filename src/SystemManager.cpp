@@ -58,3 +58,10 @@ void setupM5stack() {
   Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 
 }
+
+void checkDataTimeout() {
+  if (!initial_data_received && (millis() - last_receive_time > RECEIVE_TIMEOUT)) {
+    Serial.printf("No data received for %d seconds, restarting...\n", RECEIVE_TIMEOUT / 1000);
+    ESP.restart();
+  }
+}
