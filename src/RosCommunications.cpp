@@ -20,6 +20,7 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
+rcl_service_t reboot_service;
 rcl_subscription_t reboot_subscriber;
 rcl_subscription_t cmd_vel_subscriber;
 geometry_msgs__msg__Twist msg_sub;
@@ -63,12 +64,13 @@ void setupMicroROS() {
     "/cmd_vel"
   ));
 
-  RCCHECK(rclc_subscription_init_best_effort(
-    &reboot_subscriber,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-    "/reboot"
-  ));
+    // サービスサーバーの初期化
+    rcl_service_init_default(
+        &reboot_service,
+        rclc_support_get_node_handle(&support),
+        ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
+        "/reboot_service"
+    );
 
   #ifdef LEFT_WHEEL
   // 左輪用の処理
@@ -173,24 +175,24 @@ void setupMicroROS() {
 	int callback_size = 3;	// コールバックを行う数
 	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
-  RCCHECK(rclc_executor_add_subscription(&executor, &reboot_subscriber, &rbt_msg, &reboot_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_service(&executor, &reboot_service, &reboot_callback));
   RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 }
 
-void reboot_callback(const void * msgin) {
-  const std_msgs__msg__Int32 * rbt_msg = (const std_msgs__msg__Int32 *)msgin;
-    M5.Lcd.setCursor(0, 60);
-    M5.Lcd.print("Rebooting...");
-    M5.Lcd.setCursor(0, 80);
-    M5.Lcd.print(rbt_msg->data);
-    Serial.println("Reboot message received: ");
-    Serial.println(rbt_msg->data);
-
-  if (rbt_msg->data == 1) {
+void reboot_callback(const void * request_msg, void * response_msg) {
+    (void)request_msg;
+    
+    Serial.println("Reboot command received.");
+    
+    // レスポンスの設定
+    response->success = true;
+    strcpy(response->message, "Rebooting in 5 seconds...");
+    
+    // 再起動のタイミングを遅延
     delay(5000);
     ESP.restart();
-  }
+
 }
 
 void subscription_callback(const void * msgin) {
