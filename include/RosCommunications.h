@@ -38,6 +38,8 @@ extern geometry_msgs__msg__Twist msg_sub;
 extern std_msgs__msg__Int32 rbt_msg;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
+extern std_srvs__srv__Trigger_Request req;
+extern std_srvs__srv__Trigger_Response res;
 extern rclc_executor_t executor;
 extern rclc_support_t support;
 extern rcl_allocator_t allocator;
@@ -52,7 +54,7 @@ extern rcl_clock_t ros_clock;
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void setupMicroROS();
-void reboot_callback(const void * msgin);
+void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time);
 void handleExecutorSpin();
