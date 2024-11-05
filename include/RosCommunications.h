@@ -27,7 +27,7 @@
 #include <geometry_msgs/msg/twist_stamped.h>
 #include <sensor_msgs/msg/imu.h>
 #include <std_msgs/msg/int32.h>
-#include <std_srvs/srv/trigger.h>
+#include "../srv/CommunicationCommand.srv"
 
 #define GRAVITY 9.81f
 #define DEG2RAD 0.0174533f
