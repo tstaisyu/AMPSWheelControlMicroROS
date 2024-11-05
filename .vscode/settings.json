@@ -9,6 +9,7 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "cstddef": "cpp",
-        "*.srv": "cpp"
+        "*.srv": "cpp",
+        "system_error": "cpp"
     }
 }
