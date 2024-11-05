@@ -1,4 +1,0 @@
-int32 RequestType
----
-bool success
-string message
