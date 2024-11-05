@@ -25,7 +25,6 @@ rcl_subscription_t cmd_vel_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
-std_msgs__msg__Int32 rbt_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 std_srvs__srv__Trigger_Request req;

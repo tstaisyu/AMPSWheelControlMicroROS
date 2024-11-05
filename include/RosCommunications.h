@@ -35,7 +35,6 @@
 extern rcl_service_t reboot_service;
 extern rcl_subscription_t cmd_vel_subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
-extern std_msgs__msg__Int32 rbt_msg;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
 extern std_srvs__srv__Trigger_Request req;
