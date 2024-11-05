@@ -21,7 +21,6 @@
 #include "IMUManager.h"
 
 rcl_service_t reboot_service;
-rcl_subscription_t reboot_subscriber;
 rcl_subscription_t cmd_vel_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
@@ -29,6 +28,8 @@ sensor_msgs__msg__Imu imu_msg;
 std_msgs__msg__Int32 rbt_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
+std_srvs__srv__Trigger_Request req;
+std_srvs__srv__Trigger_Response res;
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -64,13 +65,13 @@ void setupMicroROS() {
     "/cmd_vel"
   ));
 
-    // サービスサーバーの初期化
-    rcl_service_init_default(
-        &reboot_service,
-        rclc_support_get_node_handle(&support),
-        ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
-        "/reboot_service"
-    );
+  // サービスサーバーの初期化
+  RCCHECK(rclc_service_init_best_effort(
+      &reboot_service,
+      &node,
+      ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
+      "/reboot_service"
+  ));
 
   #ifdef LEFT_WHEEL
   // 左輪用の処理
@@ -175,23 +176,27 @@ void setupMicroROS() {
 	int callback_size = 3;	// コールバックを行う数
 	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
-  RCCHECK(rclc_executor_add_service(&executor, &reboot_service, &reboot_callback));
+  RCCHECK(rclc_executor_add_service(&executor, &reboot_service, &req, &res, &reboot_callback));
   RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 }
 
-void reboot_callback(const void * request_msg, void * response_msg) {
-    (void)request_msg;
+void reboot_callback(const void * request, void * response) {
+
+  std_srvs__srv__Trigger_Request *_req = (std_srvs__srv__Trigger_Request *)request;
+	std_srvs__srv__Trigger_Response *_res = (std_srvs__srv__Trigger_Response *)response;
     
-    Serial.println("Reboot command received.");
-    
-    // レスポンスの設定
-    response->success = true;
-    strcpy(response->message, "Rebooting in 5 seconds...");
-    
-    // 再起動のタイミングを遅延
-    delay(5000);
-    ESP.restart();
+  Serial.println("Reboot command received.");
+  
+  // レスポンスの設定
+  _res->success = true;
+  if (!ROSIDL_RUNTIME_C__STRING_H_(&_res->message, "Rebooting in 5 seconds...")) {
+      Serial.println("Failed to assign reboot message.");
+  }
+  
+  // 再起動のタイミングを遅延
+  delay(5000);
+  ESP.restart();
 
 }
 
