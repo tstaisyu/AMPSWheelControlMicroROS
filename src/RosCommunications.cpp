@@ -283,23 +283,25 @@ void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_
     ));
 }
 
+// Reboot device upon receiving a reboot command
 void reboot_callback(const void * request, void * response) {
+  // Cast request and response to appropriate service message types
+  std_srvs__srv__Trigger_Request *req = (std_srvs__srv__Trigger_Request *)request;
+	std_srvs__srv__Trigger_Response *res = (std_srvs__srv__Trigger_Response *)response;
 
-  std_srvs__srv__Trigger_Request *_req = (std_srvs__srv__Trigger_Request *)request;
-	std_srvs__srv__Trigger_Response *_res = (std_srvs__srv__Trigger_Response *)response;
-    
+  // Log receipt of the reboot command    
   Serial.println("Reboot command received.");
   
-  // レスポンスの設定
-  _res->success = true;
-  if (!ROSIDL_RUNTIME_C__STRING_H_(&_res->message, "Rebooting in 5 seconds...")) {
+  // Attempt to set the response message
+  res->success = true;
+  if (!ROSIDL_RUNTIME_C__STRING_H_(&res->message, "Rebooting in 5 seconds...")) {
       Serial.println("Failed to assign reboot message.");
+      res->success = false; // Ensure the response reflects the failure
   }
   
-  // 再起動のタイミングを遅延
+  // Delay before reboot to allow message transmission
   delay(5000);
-  ESP.restart();
-
+  ESP.restart(); // Perform system restart
 }
 
 void com_check_callback(const void * msgin)
