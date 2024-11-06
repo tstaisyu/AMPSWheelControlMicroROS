@@ -58,6 +58,15 @@ extern rcl_clock_t ros_clock;
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void setupMicroROS();
+// 各初期化関数のプロトタイプ宣言
+void initializePublishers(rcl_node_t *node);
+void initializeSubscribers(rcl_node_t *node);
+void initializeServices(rcl_node_t *node);
+#ifdef LEFT_WHEEL
+void initializeIMU(rcl_node_t *node);
+#endif
+void initializeTimer(rcl_timer_t *timer, rclc_support_t *support);
+void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_allocator_t *allocator);
 void com_check_callback(const void * msgin);
 void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
