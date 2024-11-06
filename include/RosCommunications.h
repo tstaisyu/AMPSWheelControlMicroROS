@@ -30,6 +30,8 @@
 #include <std_msgs/msg/string.h>
 #include <std_srvs/srv/trigger.h>
 
+#define INTERVAL 20 // Interval for timer callback in milliseconds
+
 #define GRAVITY 9.81f
 #define DEG2RAD 0.0174533f
 
