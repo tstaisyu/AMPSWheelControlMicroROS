@@ -285,130 +285,131 @@ void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_
 
 // Reboot device upon receiving a reboot command
 void reboot_callback(const void * request, void * response) {
-  // Cast request and response to appropriate service message types
-  std_srvs__srv__Trigger_Request *req = (std_srvs__srv__Trigger_Request *)request;
-	std_srvs__srv__Trigger_Response *res = (std_srvs__srv__Trigger_Response *)response;
+    // Cast request and response to appropriate service message types
+    std_srvs__srv__Trigger_Request *req = (std_srvs__srv__Trigger_Request *)request;
+    std_srvs__srv__Trigger_Response *res = (std_srvs__srv__Trigger_Response *)response;
 
-  // Log receipt of the reboot command    
-  Serial.println("Reboot command received.");
-  
-  // Attempt to set the response message
-  res->success = true;
-  if (!ROSIDL_RUNTIME_C__STRING_H_(&res->message, "Rebooting in 5 seconds...")) {
-      Serial.println("Failed to assign reboot message.");
-      res->success = false; // Ensure the response reflects the failure
-  }
-  
-  // Delay before reboot to allow message transmission
-  delay(5000);
-  ESP.restart(); // Perform system restart
+    // Log receipt of the reboot command    
+    Serial.println("Reboot command received.");
+    
+    // Attempt to set the response message
+    res->success = true;
+    if (!ROSIDL_RUNTIME_C__STRING_H_(&res->message, "Rebooting in 5 seconds...")) {
+        Serial.println("Failed to assign reboot message.");
+        res->success = false; // Ensure the response reflects the failure
+    }
+    
+    // Delay before reboot to allow message transmission
+    delay(5000);
+    ESP.restart(); // Perform system restart
 }
 
-void com_check_callback(const void * msgin)
-{
-    const std_msgs__msg__Int32 * com_req_msg = (const std_msgs__msg__Int32 *)msgin;
-    Serial.print("Received connection check: ");
-    Serial.println(com_req_msg->data);
+// Handles the reception of connection check messages and sends a response
+void com_check_callback(const void * msgin) {
+    // Cast the incoming message to the appropriate type
+    const std_msgs__msg__Int32 * msg = (const std_msgs__msg__Int32 *)msgin;
 
+    // Log the received connection check value
+    Serial.print("Received connection check: ");
+    Serial.println(msg->data);
+
+    // Update the last time a message was received
     last_receive_time = millis();
+
+    // Mark the initial data as received if it's the first message
     if (!initial_data_received) {
       initial_data_received = true;
     }
 
-    // 受信したら応答メッセージを送る
-    com_res_msg.data = 1;
-   
+    // Prepare the response message
+    com_res_msg.data = 1; // Set the data to indicate connection is established
+
+    // Attempt to publish the response message   
     rcl_ret_t ret = rcl_publish(&com_check_publisher, &com_res_msg, NULL);
     if (ret != RCL_RET_OK) {
+        // Log any failures to publish the response
         Serial.print("Failed to publish message: ");
         Serial.println(rcl_get_error_string().str);
-        rcl_reset_error();
+        rcl_reset_error();  // Clear the error to avoid propagation
     }
+
+    // Confirm the publication of the response
     Serial.println("Published connection response: connection_established");
 }
 
-void subscription_callback(const void * msgin) {
+// Callback function for handling received Twist messages
+void subscription_callback(const void *msgin) {
+    // Cast the incoming message to the appropriate message type
+    const geometry_msgs__msg__Twist * msg = (const geometry_msgs__msg__Twist *)msgin;
 
-  const geometry_msgs__msg__Twist * msg_sub = (const geometry_msgs__msg__Twist *)msgin;
-  updateDisplay(msg_sub);
-  logReceivedData(msg_sub);
-  sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
+    // Update the display with the new data
+    updateDisplay(msg);
+
+    // Log the received data for debugging and monitoring purposes
+    logReceivedData(msg);
+
+    // Send commands to the motor based on the received Twist message
+    sendMotorCommands(msg->linear.x, msg->angular.z);
 }
 
+// Timer callback function to handle periodic tasks
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time) {
-  RCLC_UNUSED(last_call_time);
-//  M5.Lcd.clear();
-//  M5.Lcd.setCursor(0, 0);
-//  M5.Lcd.print("Timer callback triggered");
+    RCLC_UNUSED(last_call_time);
 
-  rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
-  if (rc != RCL_RET_OK) {
-      // エラー処理
-      Serial.println("Failed to get current time");
-  } else {
-      // Read IMU data
-    #ifdef LEFT_WHEEL
-    if (imuManager.update()) {
-
-        // Ahrsを使用しない場合
-        float ax, ay, az, gx, gy, gz;
-        imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
-
-        // IMUメッセージのタイムスタンプを設定
-        imu_msg.header.stamp.sec = current_time / 1000000000;  // 秒
-        imu_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
-        imu_msg.linear_acceleration.x = ax * GRAVITY;
-        imu_msg.linear_acceleration.y = ay * GRAVITY;
-        imu_msg.linear_acceleration.z = az * GRAVITY;
-        imu_msg.angular_velocity.x = gx * DEG2RAD;
-        imu_msg.angular_velocity.y = gy * DEG2RAD;
-        imu_msg.angular_velocity.z = gz * DEG2RAD;
-        imu_msg.orientation.x = 0.1;
-        imu_msg.orientation.y = 0.1;
-        imu_msg.orientation.z = 0.1;
-        imu_msg.orientation.w = 0.1;
-
-        // IMUデータの表示
-//        M5.Lcd.setCursor(0, 20);
-//        M5.Lcd.printf("Accel: %.2f, %.2f, %.2f", ax, ay, az);
-//        M5.Lcd.setCursor(0, 40);
-//        M5.Lcd.printf("Gyro: %.2f, %.2f, %.2f", gx, gy, gz);      
+    // Get current time from ROS clock
+    rcl_ret_t rc = rcl_clock_get_now(&ros_clock, &current_time);
+    if (rc != RCL_RET_OK) {
+        Serial.println("Failed to get current time");
+        return;
     }
-    #endif
 
-      // Read wheel speed data
-      float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
-      vel_msg.header.stamp.sec = current_time / 1000000000;  // 秒
-      vel_msg.header.stamp.nanosec = current_time % 1000000000;  // ナノ秒
-      #ifdef LEFT_WHEEL
-      vel_msg.twist.linear.x = -wheelSpeed;
-      #elif defined(RIGHT_WHEEL)
-      vel_msg.twist.linear.x = wheelSpeed;
-      #endif
-/*
-      M5.Lcd.clear();
-      M5.Lcd.setCursor(0, 0);
-      M5.Lcd.print("Timer Callback Triggered");
-      M5.Lcd.setCursor(0, 20);
-      M5.Lcd.printf("Linear X: %f", vel_msg.twist.linear.x);
-      M5.Lcd.setCursor(0, 40);
-      M5.Lcd.printf("Linear Y: %f", vel_msg.twist.linear.y);
-      M5.Lcd.setCursor(0, 60);
-      M5.Lcd.printf("Linear Z: %f", vel_msg.twist.linear.z);
-      M5.Lcd.setCursor(0, 80);
-      M5.Lcd.printf("Angular X: %f", vel_msg.twist.angular.x);
-      M5.Lcd.setCursor(0, 100);
-      M5.Lcd.printf("Angular Y: %f", vel_msg.twist.angular.y);
-      M5.Lcd.setCursor(0, 120);
-      M5.Lcd.printf("Angular Z: %f", vel_msg.twist.angular.z);
-*/
-  }
+    // Update IMU data if available
+#ifdef LEFT_WHEEL
+    if (imuManager.update()) {
+        updateIMUData(); // Function to update and publish IMU data
+    }
+#endif
 
-  // Publish IMU and velocity data
-  if (timer != NULL) {
-    RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
-    RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
-  }
+    // Read and publish wheel speed data
+    updateWheelSpeed(); // Function to update and publish wheel speed
+
+    // Ensure the timer is not null before publishing data
+    if (timer != NULL) {
+      RCSOFTCHECK(rcl_publish(&imu_publisher, &imu_msg, NULL));
+      RCSOFTCHECK(rcl_publish(&vel_publisher, &vel_msg, NULL));
+    }
+}
+
+// Function to update IMU data
+void updateIMUData() {
+    float ax, ay, az, gx, gy, gz;
+    imuManager.getCalibratedData(ax, ay, az, gx, gy, gz);
+
+    // Set IMU message timestamps
+    imu_msg.header.stamp.sec = current_time / 1000000000;  // seconds
+    imu_msg.header.stamp.nanosec = current_time % 1000000000;  // nanoseconds
+    imu_msg.linear_acceleration.x = ax * GRAVITY;
+    imu_msg.linear_acceleration.y = ay * GRAVITY;
+    imu_msg.linear_acceleration.z = az * GRAVITY;
+    imu_msg.angular_velocity.x = gx * DEG2RAD;
+    imu_msg.angular_velocity.y = gy * DEG2RAD;
+    imu_msg.angular_velocity.z = gz * DEG2RAD;
+    imu_msg.orientation.x = 0.1;
+    imu_msg.orientation.y = 0.1;
+    imu_msg.orientation.z = 0.1;
+    imu_msg.orientation.w = 0.1;
+}
+
+// Function to update and publish wheel speed data
+void updateWheelSpeed() {
+    float wheelSpeed = readSpeedData(motorSerial, MOTOR_ID);
+    vel_msg.header.stamp.sec = current_time / 1000000000;  // seconds
+    vel_msg.header.stamp.nanosec = current_time % 1000000000;  // nanoseconds
+#ifdef LEFT_WHEEL
+    vel_msg.twist.linear.x = -wheelSpeed;
+#elif defined(RIGHT_WHEEL)
+    vel_msg.twist.linear.x = wheelSpeed;
+#endif
 }
 
 void handleExecutorSpin() {

@@ -87,6 +87,8 @@ void com_check_callback(const void * msgin);
 void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time);
+void updateIMUData();
+void updateWheelSpeed();
 void handleExecutorSpin();
 
 #endif
