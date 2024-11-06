@@ -20,6 +20,24 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
+// Constants for ROS 2 node names
+#define NODE_NAME_LEFT "left_wheel_node"
+#define NODE_NAME_RIGHT "right_wheel_node"
+
+// Constants for ROS 2 topic and service names
+#define CMD_VEL_TOPIC "/cmd_vel"
+#define REBOOT_SERVICE_NAME "/reboot_service"
+#define CONNECTION_RESPONSE_TOPIC "connection_response"
+#define CONNECTION_CHECK_TOPIC "connection_check"
+#define VELOCITY_TOPIC_LEFT "/left_vel"
+#define VELOCITY_TOPIC_RIGHT "/right_vel"
+#define IMU_DATA_TOPIC "/imu/data_raw"
+
+// Constants for ROS 2 frame IDs
+#define IMU_FRAME_ID "imu"
+#define VELOCITY_FRAME_ID_LEFT "l_w"
+#define VELOCITY_FRAME_ID_RIGHT "r_w"
+
 // Communication Check: Publisher and Subscriber for integrity check messages
 rcl_subscription_t com_check_subscriber;  // Subscriber for communication check requests
 rcl_publisher_t com_check_publisher;      // Publisher for communication check responses
@@ -79,9 +97,9 @@ void setupMicroROS() {
     
     // Initialize the ROS node based on the wheel type (left or right)
     #ifdef LEFT_WHEEL
-    RCCHECK(rclc_node_init_default(&node, "left_wheel_node", "", &support));
+    RCCHECK(rclc_node_init_default(&node, NODE_NAME_LEFT, "", &support));
     #elif defined(RIGHT_WHEEL)
-    RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
+    RCCHECK(rclc_node_init_default(&node, NODE_NAME_RIGHT, "", &support));
     #endif
 
     // Call initialization functions of the ROS executor and the components for the node
@@ -102,7 +120,7 @@ void initializePublishers(rcl_node_t *node) {
         &com_check_publisher,
         node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-        "connection_response"
+        CONNECTION_RESPONSE_TOPIC
     ));
 
     // Initialize Velocity Publisher based on wheel type
@@ -111,14 +129,14 @@ void initializePublishers(rcl_node_t *node) {
             &vel_publisher,
             node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-            "/left_vel"
+            VELOCITY_TOPIC_LEFT
         ));
     #elif defined(RIGHT_WHEEL)
         RCCHECK(rclc_publisher_init_best_effort(
             &vel_publisher,
             node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-            "/right_vel"
+            VELOCITY_TOPIC_RIGHT
         ));
     #endif
 
@@ -135,9 +153,9 @@ void initializePublishers(rcl_node_t *node) {
     vel_msg.header.frame_id.data = vel_frame_id_buffer; // Point to buffer
 
     #ifdef LEFT_WHEEL
-        const char* vel_frame_id = "l_w";
+        const char* vel_frame_id = VELOCITY_FRAME_ID_LEFT;
     #elif defined(RIGHT_WHEEL)
-        const char* vel_frame_id = "r_w";
+        const char* vel_frame_id = VELOCITY_FRAME_ID_RIGHT;
     #endif
     strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
     vel_msg.header.frame_id.size = strlen(vel_frame_id);
@@ -150,7 +168,7 @@ void initializeSubscribers(rcl_node_t *node) {
         &com_check_subscriber,
         node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-        "connection_check"
+        CONNECTION_CHECK_TOPIC
     ));
 
     // Initialize cmd_vel Subscriber for velocity commands 
@@ -158,7 +176,7 @@ void initializeSubscribers(rcl_node_t *node) {
         &cmd_vel_subscriber,
         node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-        "/cmd_vel"
+        CMD_VEL_TOPIC
     ));
 }
 
@@ -169,7 +187,7 @@ void initializeServices(rcl_node_t *node) {
         &reboot_service,
         node,
         ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
-        "/reboot_service"
+        REBOOT_SERVICE_NAME
     ));
 }
 
@@ -181,7 +199,7 @@ void initializeIMU(rcl_node_t *node) {
         &imu_publisher,
         node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-        "/imu/data_raw"
+        IMU_DATA_TOPIC
     ));
 
     // Set default covariance values for IMU data
@@ -226,7 +244,7 @@ void initializeIMU(rcl_node_t *node) {
     static char imu_frame_id_buffer[256];
     imu_msg.header.frame_id.data = imu_frame_id_buffer; // Point to buffer
 
-    const char* imu_frame_id = "imu";
+    const char* imu_frame_id = IMU_FRAME_ID;
     strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
     imu_msg.header.frame_id.size = strlen(imu_frame_id);
 }
@@ -234,7 +252,7 @@ void initializeIMU(rcl_node_t *node) {
 
 // Initialize Timer for periodic callbacks
 void initializeTimer(rcl_timer_t *timer, rclc_support_t *support) {
-    const unsigned int timer_timeout = 20;  // 20ms interval
+    const unsigned int timer_timeout = INTERVAL;
     RCCHECK(rclc_timer_init_default(
         timer,
         support,
