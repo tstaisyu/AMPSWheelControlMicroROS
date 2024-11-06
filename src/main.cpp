@@ -18,15 +18,26 @@
 #include "MotorController.h"
 #include "RosCommunications.h"
 
+// Initializes the system on startup
 void setup() {
+    // Initialize M5Stack hardware configurations
+    setupM5stack();
 
-  setupM5stack();
-  initializeUART();
-  setupMicroROS();
-  last_receive_time = millis();
+    // Initialize UART communication for motors
+    initializeUART();
+
+    // Set up micro-ROS environment and node
+    setupMicroROS();
+
+    // Record the last time data was received to monitor timeouts
+    last_receive_time = millis();
 }
 
+// Main loop to handle routine operations
 void loop() {
-  handleExecutorSpin();
-  checkDataTimeout();  
+    // Process ROS 2 executor callbacks
+    handleExecutorSpin();
+
+    // Check for data reception timeouts and handle if necessary
+    checkDataTimeout();
 }

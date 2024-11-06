@@ -23,42 +23,50 @@
 
 IMUManager imuManager;
 
+// Configuration constants
 const char* ssid       = WIFI_SSID;
 const char* password   = WIFI_PASSWORD;
 const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600 * 9;  // JSTのGMTオフセット
+const long  gmtOffset_sec = 3600 * 9;  // GMT+9 (JST) 
 const int   daylightOffset_sec = 0;
 
+// Initializes M5Stack device, WiFi and time settings
 void setupM5stack() {
-  M5.begin();
-  delay(500);
-  #ifdef LEFT_WHEEL  
-  imuManager.initialize();
-  #endif
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(0, 0);  // LCD表示初期位置
-
-  Serial.begin(BAUD_RATE);
-  while (!Serial);  // シリアルポートが開くのを待つ
-
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
+    M5.begin();
     delay(500);
-    Serial.print(".");
-  }
-  Serial.println("WiFi connected.");
 
-  // 時刻設定
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+#ifdef LEFT_WHEEL  
+    // Initialize IMU if compiling for the left wheel configuration
+    imuManager.initialize();
+#endif
 
+    // Set text size and initial cursor position for LCD display
+    M5.Lcd.setTextSize(2);
+    M5.Lcd.setCursor(0, 0);  // Set cursor for title
+
+    // Start serial communication
+    Serial.begin(BAUD_RATE);
+    while (!Serial);  // Wait for the serial port to connect. Needed for native USB
+
+    // Connect to WiFi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("WiFi connected.");
+
+    // Setup and sync time with NTP server
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+      Serial.println("Failed to obtain time");
+      return;
+    }
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
+// Checks if data has not been received for a specified timeout and restarts if necessary
 void checkDataTimeout() {
   if (!initial_data_received && (millis() - last_receive_time > RECEIVE_TIMEOUT)) {
     Serial.printf("No data received for %d seconds, restarting...\n", RECEIVE_TIMEOUT / 1000);

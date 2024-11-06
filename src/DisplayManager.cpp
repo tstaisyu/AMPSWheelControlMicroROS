@@ -16,16 +16,20 @@
 #include <M5Stack.h>
 #include "DisplayManager.h"
 
+// Updates the M5Stack display with twist message data
 void updateDisplay(const geometry_msgs__msg__Twist* msg) {
-  M5.Lcd.clear();  // LCD画面をクリア
-  M5.Lcd.setCursor(0, 20);  // テキスト表示位置を設定
-  M5.Lcd.print("Callback triggered");
+    // Clear the display to prepare for new data
+    M5.Lcd.clear();
+    M5.Lcd.setCursor(0, 20);  // Set cursor for title
+    M5.Lcd.print("Callback triggered");
 
-  M5.Lcd.setCursor(0, 40);
-  M5.Lcd.print("Linear.x: ");
-  M5.Lcd.println(msg->linear.x);
+    // Display linear x component of the twist message
+    M5.Lcd.setCursor(0, 40);  // Set cursor for linear x data
+    M5.Lcd.print("Linear.x: ");
+    M5.Lcd.println(msg->linear.x);
 
-  M5.Lcd.setCursor(0, 60);
-  M5.Lcd.print("Angular.z: ");
-  M5.Lcd.println(msg->angular.z);
+    // Display angular z component of the twist message
+    M5.Lcd.setCursor(0, 60);  // Set cursor for linear z data
+    M5.Lcd.print("Angular.z: ");
+    M5.Lcd.println(msg->angular.z);
 }
