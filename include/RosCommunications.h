@@ -41,8 +41,8 @@ extern std_msgs__msg__Int32 com_res_msg;          // Message for outgoing commun
 
 // Reboot service: Handles requests to reboot the system safely
 extern rcl_service_t reboot_service;              // Service to manage reboot requests
-extern std_srvs__srv__Trigger_Request req;        // Reboot request message
-extern std_srvs__srv__Trigger_Response res;       // Reboot response message
+extern std_srvs__srv__Trigger_Request request;        // Reboot request message
+extern std_srvs__srv__Trigger_Response response;       // Reboot response message
 
 // cmd_vel subscriber: Subscribes to velocity commands for the robot
 extern rcl_subscription_t cmd_vel_subscriber;     // Subscriber for velocity commands

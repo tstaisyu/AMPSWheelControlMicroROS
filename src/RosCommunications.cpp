@@ -28,8 +28,8 @@ std_msgs__msg__Int32 com_res_msg;          // Message for outgoing communication
 
 // Reboot service: Handles requests to reboot the system safely
 rcl_service_t reboot_service;              // Service to manage reboot requests
-std_srvs__srv__Trigger_Request req;        // Reboot request message
-std_srvs__srv__Trigger_Response res;       // Reboot response message
+std_srvs__srv__Trigger_Request request;        // Reboot request message
+std_srvs__srv__Trigger_Response response;       // Reboot response message
 
 // cmd_vel subscriber: Subscribes to velocity commands for the robot
 rcl_subscription_t cmd_vel_subscriber;     // Subscriber for velocity commands
@@ -262,8 +262,8 @@ void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_
     RCCHECK(rclc_executor_add_service(
         executor,
         &reboot_service,
-        &req,
-        &res,
+        &request,
+        &response,
         &reboot_callback
     ));
 
