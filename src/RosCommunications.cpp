@@ -412,11 +412,13 @@ void updateWheelSpeed() {
 #endif
 }
 
+// Executes the ROS 2 executor for a specified duration and handles any occurring errors
 void handleExecutorSpin() {
-  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10)));
-  if (rcl_error_is_set()) {
-    RCL_SET_ERROR_MSG("rclc_executor_spin_some failed");
-    printf("Error in rclc_executor_spin_some: %s\n", rcl_get_error_string().str);
-    rcl_reset_error();
-  }
+    // Spin the executor for 10 milliseconds
+    rcl_ret_t ret = rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
+    if (ret != RCL_RET_OK) {
+        // If an error occurs, retrieve and print the error message
+        printf("Error in rclc_executor_spin_some: %s\n", rcl_get_error_string().str);
+        rcl_reset_error();  // Reset the error state to prevent propagation
+    }
 }
