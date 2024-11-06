@@ -26,8 +26,8 @@ rcl_subscription_t com_check_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
-std_msgs__msg__String com_req_msg;
-std_msgs__msg__String com_res_msg;
+std_msgs__msg__Int32 com_req_msg;
+std_msgs__msg__Int32 com_res_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
 rcl_publisher_t com_check_publisher;
@@ -40,8 +40,6 @@ rcl_node_t node;
 rcl_timer_t timer;
 rcl_time_point_value_t current_time;
 rcl_clock_t ros_clock;
-
-char com_res_text[] = "connected";
 
 void setupMicroROS() {
 	set_microros_transports();
@@ -67,7 +65,7 @@ void setupMicroROS() {
   RCCHECK(rclc_publisher_init_best_effort(
       &com_check_publisher,
       &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
       "connection_response"
   ));
 
@@ -75,7 +73,7 @@ void setupMicroROS() {
   RCCHECK(rclc_subscription_init_best_effort(
       &com_check_subscriber,
       &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
       "connection_check"
   ));
       
@@ -202,7 +200,6 @@ void setupMicroROS() {
   RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
 
-  com_req_msg.data.capacity = sizeof(com_req_msg.data.data);
 }
 
 void reboot_callback(const void * request, void * response) {
@@ -226,9 +223,9 @@ void reboot_callback(const void * request, void * response) {
 
 void com_check_callback(const void * msgin)
 {
-    const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+    const std_msgs__msg__Int32 * com_req_msg = (const std_msgs__msg__Int32 *)msgin;
     Serial.print("Received connection check: ");
-    Serial.println(msg->data.data);
+    Serial.println(com_req_msg->data);
 
     last_receive_time = millis();
     if (!initial_data_received) {
@@ -236,10 +233,8 @@ void com_check_callback(const void * msgin)
     }
 
     // 受信したら応答メッセージを送る
-    strcpy(com_res_msg.data.data, com_res_text);
-    com_res_msg.data.size = strlen(com_res_text);
-    com_res_msg.data.capacity = sizeof(com_res_msg.data.data);
-    
+    com_res_msg.data = 1;
+   
     rcl_ret_t ret = rcl_publish(&com_check_publisher, &com_res_msg, NULL);
     if (ret != RCL_RET_OK) {
         Serial.print("Failed to publish message: ");
