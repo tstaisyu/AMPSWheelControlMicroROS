@@ -22,11 +22,15 @@
 
 rcl_service_t reboot_service;
 rcl_subscription_t cmd_vel_subscriber;
+rcl_subscription_t com_check_subscriber;
 geometry_msgs__msg__Twist msg_sub;
 geometry_msgs__msg__TwistStamped vel_msg;
 sensor_msgs__msg__Imu imu_msg;
+std_msgs__msg__String com_req_msg;
+std_msgs__msg__String com_res_msg;
 rcl_publisher_t vel_publisher;
 rcl_publisher_t imu_publisher;
+rcl_publisher_t com_check_publisher;
 std_srvs__srv__Trigger_Request req;
 std_srvs__srv__Trigger_Response res;
 rclc_executor_t executor;
@@ -36,6 +40,8 @@ rcl_node_t node;
 rcl_timer_t timer;
 rcl_time_point_value_t current_time;
 rcl_clock_t ros_clock;
+
+char com_res_text[] = "connected";
 
 void setupMicroROS() {
 	set_microros_transports();
@@ -57,6 +63,22 @@ void setupMicroROS() {
   RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
   #endif
 
+  // 通信確立チェックパブリッシャーの初期化
+  RCCHECK(rclc_publisher_init_best_effort(
+      &com_check_publisher,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+      "connection_response"
+  ));
+
+  // 通信確立チェックサブスクリプションの初期化
+  RCCHECK(rclc_subscription_init_best_effort(
+      &com_check_subscriber,
+      &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+      "connection_check"
+  ));
+      
   RCCHECK(rclc_subscription_init_best_effort(
     &cmd_vel_subscriber,
     &node,
@@ -172,12 +194,15 @@ void setupMicroROS() {
       timer_callback
   ));
 
-	int callback_size = 3;	// コールバックを行う数
+	int callback_size = 4;	// コールバックを行う数
 	executor = rclc_executor_get_zero_initialized_executor();
   RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
+  RCCHECK(rclc_executor_add_subscription(&executor, &com_check_subscriber, &com_req_msg, &com_check_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_service(&executor, &reboot_service, &req, &res, &reboot_callback));
   RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
+
+  com_req_msg.data.capacity = sizeof(com_req_msg.data.data);
 }
 
 void reboot_callback(const void * request, void * response) {
@@ -197,6 +222,21 @@ void reboot_callback(const void * request, void * response) {
   delay(5000);
   ESP.restart();
 
+}
+
+void com_check_callback(const void * msgin)
+{
+    const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+    Serial.print("Received connection check: ");
+    Serial.println(msg->data.data);
+
+    // 受信したら応答メッセージを送る
+    strcpy(com_res_msg.data.data, com_res_text);
+    com_res_msg.data.size = strlen(com_res_text);
+    com_res_msg.data.capacity = sizeof(com_res_msg.data.data);
+    
+    rcl_publish(&com_check_publisher, &com_res_msg, NULL);
+    Serial.println("Published connection response: connection_established");
 }
 
 void subscription_callback(const void * msgin) {

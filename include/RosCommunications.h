@@ -27,6 +27,7 @@
 #include <geometry_msgs/msg/twist_stamped.h>
 #include <sensor_msgs/msg/imu.h>
 #include <std_msgs/msg/int32.h>
+#include <std_msgs/msg/string.h>
 #include <std_srvs/srv/trigger.h>
 
 #define GRAVITY 9.81f
@@ -34,9 +35,13 @@
 
 extern rcl_service_t reboot_service;
 extern rcl_subscription_t cmd_vel_subscriber;
+extern rcl_subscription_t com_check_subscriber;
 extern geometry_msgs__msg__Twist msg_sub;
+extern std_msgs__msg__String com_req_msg;
+extern std_msgs__msg__String com_res_msg;
 extern rcl_publisher_t vel_publisher;
 extern rcl_publisher_t imu_publisher;
+extern rcl_publisher_t com_check_publisher;
 extern std_srvs__srv__Trigger_Request req;
 extern std_srvs__srv__Trigger_Response res;
 extern rclc_executor_t executor;
@@ -53,6 +58,7 @@ extern rcl_clock_t ros_clock;
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void setupMicroROS();
+void com_check_callback(const void * msgin);
 void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time);
