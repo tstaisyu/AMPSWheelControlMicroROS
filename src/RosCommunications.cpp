@@ -230,22 +230,28 @@ void com_check_callback(const void * msgin)
     Serial.print("Received connection check: ");
     Serial.println(msg->data.data);
 
+    last_receive_time = millis();
+    if (!initial_data_received) {
+      initial_data_received = true;
+    }
+
     // 受信したら応答メッセージを送る
     strcpy(com_res_msg.data.data, com_res_text);
     com_res_msg.data.size = strlen(com_res_text);
     com_res_msg.data.capacity = sizeof(com_res_msg.data.data);
     
-    rcl_publish(&com_check_publisher, &com_res_msg, NULL);
+    rcl_ret_t ret = rcl_publish(&com_check_publisher, &com_res_msg, NULL);
+    if (ret != RCL_RET_OK) {
+        Serial.print("Failed to publish message: ");
+        Serial.println(rcl_get_error_string().str);
+        rcl_reset_error();
+    }
     Serial.println("Published connection response: connection_established");
 }
 
 void subscription_callback(const void * msgin) {
 
   const geometry_msgs__msg__Twist * msg_sub = (const geometry_msgs__msg__Twist *)msgin;
-  last_receive_time = millis();
-  if (!initial_data_received) {
-    initial_data_received = true;
-  }
   updateDisplay(msg_sub);
   logReceivedData(msg_sub);
   sendMotorCommands(msg_sub->linear.x, msg_sub->angular.z);
