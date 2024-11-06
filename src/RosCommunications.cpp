@@ -84,50 +84,39 @@ void setupMicroROS() {
     RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
     #endif
 
+    // Call initialization functions of the ROS executor and the components for the node
+    initializePublishers(&node);
+    initializeSubscribers(&node);
+    initializeServices(&node);
+    #ifdef LEFT_WHEEL
+        initializeIMU(&node);
+    #endif
+    initializeTimer(&timer, &support);
+    initializeExecutor(&executor, &support, &allocator);
+}
+
+// Initialize Publishers
+void initializePublishers(rcl_node_t *node) {
     // Initialize Communication Check Publisher
     RCCHECK(rclc_publisher_init_best_effort(
         &com_check_publisher,
-        &node,
+        node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
         "connection_response"
-    ));
-
-    // Initialize Communication Check Subscriber
-    RCCHECK(rclc_subscription_init_best_effort(
-        &com_check_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-        "connection_check"
-    ));
-
-    // Initialize cmd_vel Subscriber for velocity commands      
-    RCCHECK(rclc_subscription_init_best_effort(
-      &cmd_vel_subscriber,
-      &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-      "/cmd_vel"
-    ));
-
-    // Initialize Reboot Service Server
-    RCCHECK(rclc_service_init_best_effort(
-        &reboot_service,
-        &node,
-        ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
-        "/reboot_service"
     ));
 
     // Initialize Velocity Publisher based on wheel type
     #ifdef LEFT_WHEEL
         RCCHECK(rclc_publisher_init_best_effort(
             &vel_publisher,
-            &node,
+            node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
             "/left_vel"
         ));
     #elif defined(RIGHT_WHEEL)
         RCCHECK(rclc_publisher_init_best_effort(
             &vel_publisher,
-            &node,
+            node,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
             "/right_vel"
         ));
@@ -152,81 +141,117 @@ void setupMicroROS() {
     #endif
     strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
     vel_msg.header.frame_id.size = strlen(vel_frame_id);
+}
 
-    // Initialize IMU Publisher and IMU Message for Left Wheel
-    #ifdef LEFT_WHEEL
-        // Initialize IMU data publisher for left wheel
-        RCCHECK(rclc_publisher_init_best_effort(
-            &imu_publisher,
-            &node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-            "/imu/data_raw"
-        ));
+// Initialize Subscribers
+void initializeSubscribers(rcl_node_t *node) {
+    // Initialize Communication Check Subscriber
+    RCCHECK(rclc_subscription_init_best_effort(
+        &com_check_subscriber,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+        "connection_check"
+    ));
 
-        // Set default covariance values for IMU data
-        imu_msg.orientation_covariance[0] = -1; // Uncomment if using orientation
+    // Initialize cmd_vel Subscriber for velocity commands 
+    RCCHECK(rclc_subscription_init_best_effort(
+        &cmd_vel_subscriber,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+        "/cmd_vel"
+    ));
+}
 
-        // Uncomment and set if using orientation covariance
-        /*  
-        imu_msg.orientation_covariance[0] = 0.0001; // Variance for x-axis
-        imu_msg.orientation_covariance[1] = 0.0;
-        imu_msg.orientation_covariance[2] = 0.0;
-        imu_msg.orientation_covariance[3] = 0.0;
-        imu_msg.orientation_covariance[4] = 0.0001; // Variance for y-axis
-        imu_msg.orientation_covariance[5] = 0.0;
-        imu_msg.orientation_covariance[6] = 0.0;
-        imu_msg.orientation_covariance[7] = 0.0;
-        imu_msg.orientation_covariance[8] = 0.0001; // Variance for z-axis
-        */
+// Initialize Reboot Service Server
+void initializeServices(rcl_node_t *node) {
+    // Reboot Service Server の初期化
+    RCCHECK(rclc_service_init_best_effort(
+        &reboot_service,
+        node,
+        ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
+        "/reboot_service"
+    ));
+}
 
-        // Set covariance for angular velocity
-        imu_msg.angular_velocity_covariance[0] = 0.0025;  // Variance for x-axis
-        imu_msg.angular_velocity_covariance[1] = 0.0;
-        imu_msg.angular_velocity_covariance[2] = 0.0;
-        imu_msg.angular_velocity_covariance[3] = 0.0;
-        imu_msg.angular_velocity_covariance[4] = 0.0025;  // Variance for y-axis
-        imu_msg.angular_velocity_covariance[5] = 0.0;
-        imu_msg.angular_velocity_covariance[6] = 0.0;
-        imu_msg.angular_velocity_covariance[7] = 0.0;
-        imu_msg.angular_velocity_covariance[8] = 0.0025;  // Variance for z-axis
+#ifdef LEFT_WHEEL
+// Initialize IMU Publisher and IMU Message for Left Wheel
+void initializeIMU(rcl_node_t *node) {
+    // Initialize IMU data publisher for left wheel
+    RCCHECK(rclc_publisher_init_best_effort(
+        &imu_publisher,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+        "/imu/data_raw"
+    ));
 
-        // Set covariance for linear acceleration
-        imu_msg.linear_acceleration_covariance[0] = 0.0004;  // Variance for x-axis
-        imu_msg.linear_acceleration_covariance[1] = 0.0;
-        imu_msg.linear_acceleration_covariance[2] = 0.0;
-        imu_msg.linear_acceleration_covariance[3] = 0.0;
-        imu_msg.linear_acceleration_covariance[4] = 0.0004;  // Variance for y-axis
-        imu_msg.linear_acceleration_covariance[5] = 0.0;
-        imu_msg.linear_acceleration_covariance[6] = 0.0;
-        imu_msg.linear_acceleration_covariance[7] = 0.0;
-        imu_msg.linear_acceleration_covariance[8] = 0.0004;  // Variance for z-axis
+    // Set default covariance values for IMU data
+    imu_msg.orientation_covariance[0] = -1; // Uncomment if using orientation
 
-        // Allocate buffer for IMU Frame ID and set it
-        static char imu_frame_id_buffer[256];
-        imu_msg.header.frame_id.data = imu_frame_id_buffer; // Point to buffer
+    // Uncomment and set if using orientation covariance
+    /*  
+    imu_msg.orientation_covariance[0] = 0.0001; // Variance for x-axis
+    imu_msg.orientation_covariance[1] = 0.0;
+    imu_msg.orientation_covariance[2] = 0.0;
+    imu_msg.orientation_covariance[3] = 0.0;
+    imu_msg.orientation_covariance[4] = 0.0001; // Variance for y-axis
+    imu_msg.orientation_covariance[5] = 0.0;
+    imu_msg.orientation_covariance[6] = 0.0;
+    imu_msg.orientation_covariance[7] = 0.0;
+    imu_msg.orientation_covariance[8] = 0.0001; // Variance for z-axis
+    */
 
-        const char* imu_frame_id = "imu";
-        strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
-        imu_msg.header.frame_id.size = strlen(imu_frame_id);
-    #endif
+    // Set covariance for angular velocity
+    imu_msg.angular_velocity_covariance[0] = 0.0025;  // Variance for x-axis
+    imu_msg.angular_velocity_covariance[1] = 0.0;
+    imu_msg.angular_velocity_covariance[2] = 0.0;
+    imu_msg.angular_velocity_covariance[3] = 0.0;
+    imu_msg.angular_velocity_covariance[4] = 0.0025;  // Variance for y-axis
+    imu_msg.angular_velocity_covariance[5] = 0.0;
+    imu_msg.angular_velocity_covariance[6] = 0.0;
+    imu_msg.angular_velocity_covariance[7] = 0.0;
+    imu_msg.angular_velocity_covariance[8] = 0.0025;  // Variance for z-axis
 
-    // Initialize Timer for periodic callbacks
+    // Set covariance for linear acceleration
+    imu_msg.linear_acceleration_covariance[0] = 0.0004;  // Variance for x-axis
+    imu_msg.linear_acceleration_covariance[1] = 0.0;
+    imu_msg.linear_acceleration_covariance[2] = 0.0;
+    imu_msg.linear_acceleration_covariance[3] = 0.0;
+    imu_msg.linear_acceleration_covariance[4] = 0.0004;  // Variance for y-axis
+    imu_msg.linear_acceleration_covariance[5] = 0.0;
+    imu_msg.linear_acceleration_covariance[6] = 0.0;
+    imu_msg.linear_acceleration_covariance[7] = 0.0;
+    imu_msg.linear_acceleration_covariance[8] = 0.0004;  // Variance for z-axis
+
+    // Allocate buffer for IMU Frame ID and set it
+    static char imu_frame_id_buffer[256];
+    imu_msg.header.frame_id.data = imu_frame_id_buffer; // Point to buffer
+
+    const char* imu_frame_id = "imu";
+    strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
+    imu_msg.header.frame_id.size = strlen(imu_frame_id);
+}
+#endif
+
+// Initialize Timer for periodic callbacks
+void initializeTimer(rcl_timer_t *timer, rclc_support_t *support) {
     const unsigned int timer_timeout = 20;  // 20ms interval
     RCCHECK(rclc_timer_init_default(
-        &timer,
-        &support,
+        timer,
+        support,
         RCL_MS_TO_NS(timer_timeout),
         timer_callback
     ));
+}
 
-    // Initialize the Executor with the number of callbacks
+// Initialize the Executor with the number of callbacks
+void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_allocator_t *allocator) {
     int callback_size = 4;	// Number of callbacks to handle
-    executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
+    *executor = rclc_executor_get_zero_initialized_executor();
+    RCCHECK(rclc_executor_init(executor, &support->context, callback_size, allocator));
 
     // Add Communication Check Subscriber to Executor
     RCCHECK(rclc_executor_add_subscription(
-        &executor,
+        executor,
         &com_check_subscriber,
         &com_req_msg,
         &com_check_callback,
@@ -235,7 +260,7 @@ void setupMicroROS() {
 
     // Add Reboot Service to Executor
     RCCHECK(rclc_executor_add_service(
-        &executor,
+        executor,
         &reboot_service,
         &req,
         &res,
@@ -244,7 +269,7 @@ void setupMicroROS() {
 
     // Add cmd_vel Subscriber to Executor
     RCCHECK(rclc_executor_add_subscription(
-        &executor,
+        executor,
         &cmd_vel_subscriber,
         &msg_sub,
         &subscription_callback,
@@ -253,7 +278,7 @@ void setupMicroROS() {
 
     // Add Timer to Executor
     RCCHECK(rclc_executor_add_timer(
-        &executor,
+        executor,
         &timer
     ));
 }
