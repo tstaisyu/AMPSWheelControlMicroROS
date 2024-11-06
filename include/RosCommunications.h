@@ -58,7 +58,7 @@ extern rcl_clock_t ros_clock;
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void setupMicroROS();
-// 各初期化関数のプロトタイプ宣言
+// Prototype declaration for each initialization function
 void initializePublishers(rcl_node_t *node);
 void initializeSubscribers(rcl_node_t *node);
 void initializeServices(rcl_node_t *node);
