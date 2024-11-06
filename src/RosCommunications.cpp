@@ -56,164 +56,206 @@ rcl_node_t node;                           // The node itself
 
 
 void setupMicroROS() {
-	set_microros_transports();
-  allocator = rcl_get_default_allocator();
+    // Initialize micro-ROS transports
+    set_microros_transports();
 
-  rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
-  if (rc != RCL_RET_OK) {
-      Serial.println("Failed to initialize ROS clock");
-      return;
-  }
-  RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
-	//init_options = rcl_get_zero_initialized_init_options();
-	//RCCHECK(rcl_init_options_init(&init_options, allocator));
-	//RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));		// ドメインIDの設定
-	//RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator)); // 前のrclc_support_initは削除する
-  #ifdef LEFT_WHEEL
-  RCCHECK(rclc_node_init_default(&node, "left_wheel_node", "", &support));
-  #elif defined(RIGHT_WHEEL)
-  RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
-  #endif
+    // Initialize the default allocator for memory management
+    allocator = rcl_get_default_allocator();
 
-  // 通信確立チェックパブリッシャーの初期化
-  RCCHECK(rclc_publisher_init_best_effort(
-      &com_check_publisher,
+    // Initialize ROS clock with ROS time and the default allocator
+    rcl_ret_t rc = rcl_clock_init(RCL_ROS_TIME, &ros_clock, &allocator);
+    if (rc != RCL_RET_OK) {
+        Serial.println("Failed to initialize ROS clock");
+        return;
+    }
+
+    // Initialize micro-ROS support structure
+    RCCHECK(rclc_support_init(&support, 0, NULL, &allocator));
+    
+    //init_options = rcl_get_zero_initialized_init_options();
+    //RCCHECK(rcl_init_options_init(&init_options, allocator));
+    //RCCHECK(rcl_init_options_set_domain_id(&init_options, domain_id));		// ドメインIDの設定
+    //RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator)); // 前のrclc_support_initは削除する
+    
+    // Initialize the ROS node based on the wheel type (left or right)
+    #ifdef LEFT_WHEEL
+    RCCHECK(rclc_node_init_default(&node, "left_wheel_node", "", &support));
+    #elif defined(RIGHT_WHEEL)
+    RCCHECK(rclc_node_init_default(&node, "right_wheel_node", "", &support));
+    #endif
+
+    // Initialize Communication Check Publisher
+    RCCHECK(rclc_publisher_init_best_effort(
+        &com_check_publisher,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+        "connection_response"
+    ));
+
+    // Initialize Communication Check Subscriber
+    RCCHECK(rclc_subscription_init_best_effort(
+        &com_check_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+        "connection_check"
+    ));
+
+    // Initialize cmd_vel Subscriber for velocity commands      
+    RCCHECK(rclc_subscription_init_best_effort(
+      &cmd_vel_subscriber,
       &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-      "connection_response"
-  ));
+      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
+      "/cmd_vel"
+    ));
 
-  // 通信確立チェックサブスクリプションの初期化
-  RCCHECK(rclc_subscription_init_best_effort(
-      &com_check_subscriber,
-      &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
-      "connection_check"
-  ));
-      
-  RCCHECK(rclc_subscription_init_best_effort(
-    &cmd_vel_subscriber,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
-    "/cmd_vel"
-  ));
+    // Initialize Reboot Service Server
+    RCCHECK(rclc_service_init_best_effort(
+        &reboot_service,
+        &node,
+        ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
+        "/reboot_service"
+    ));
 
-  // サービスサーバーの初期化
-  RCCHECK(rclc_service_init_best_effort(
-      &reboot_service,
-      &node,
-      ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, Trigger),
-      "/reboot_service"
-  ));
+    // Initialize Velocity Publisher based on wheel type
+    #ifdef LEFT_WHEEL
+        RCCHECK(rclc_publisher_init_best_effort(
+            &vel_publisher,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
+            "/left_vel"
+        ));
+    #elif defined(RIGHT_WHEEL)
+        RCCHECK(rclc_publisher_init_best_effort(
+            &vel_publisher,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
+            "/right_vel"
+        ));
+    #endif
 
-  #ifdef LEFT_WHEEL
-  // 左輪用の処理
-  RCCHECK(rclc_publisher_init_best_effort(
-      &vel_publisher,
-      &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-      "/left_vel"
-  ));
-  #elif defined(RIGHT_WHEEL)
-  // 右輪用の処理
-  RCCHECK(rclc_publisher_init_best_effort(
-      &vel_publisher,
-      &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-      "/right_vel"
-  ));
-  #endif
+    // Initialize Velocity Message with default values
+    vel_msg.twist.linear.x = 0.0;
+    vel_msg.twist.linear.y = 0.0;
+    vel_msg.twist.linear.z = 0.0;
+    vel_msg.twist.angular.x = 0.0;
+    vel_msg.twist.angular.y = 0.0;
+    vel_msg.twist.angular.z = 0.0;
 
+    // Allocate buffer for Velocity Frame ID and set it
+    static char vel_frame_id_buffer[256]; // Ensure sufficient size
+    vel_msg.header.frame_id.data = vel_frame_id_buffer; // Point to buffer
 
-  vel_msg.twist.linear.x = 0.0;
-  vel_msg.twist.linear.y = 0.0;
-  vel_msg.twist.linear.z = 0.0;
-  vel_msg.twist.angular.x = 0.0;
-  vel_msg.twist.angular.y = 0.0;
-  vel_msg.twist.angular.z = 0.0;
+    #ifdef LEFT_WHEEL
+        const char* vel_frame_id = "l_w";
+    #elif defined(RIGHT_WHEEL)
+        const char* vel_frame_id = "r_w";
+    #endif
+    strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
+    vel_msg.header.frame_id.size = strlen(vel_frame_id);
 
-  static char vel_frame_id_buffer[256]; // 十分なサイズを確保
-  vel_msg.header.frame_id.data = vel_frame_id_buffer; // ポインタをバッファに設定
+    // Initialize IMU Publisher and IMU Message for Left Wheel
+    #ifdef LEFT_WHEEL
+        // Initialize IMU data publisher for left wheel
+        RCCHECK(rclc_publisher_init_best_effort(
+            &imu_publisher,
+            &node,
+            ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
+            "/imu/data_raw"
+        ));
 
-  #ifdef LEFT_WHEEL
-  const char* vel_frame_id = "l_w";
-  #elif defined(RIGHT_WHEEL)
-  const char* vel_frame_id = "r_w";
-  #endif
-  strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
-  vel_msg.header.frame_id.size = strlen(vel_frame_id);
+        // Set default covariance values for IMU data
+        imu_msg.orientation_covariance[0] = -1; // Uncomment if using orientation
 
+        // Uncomment and set if using orientation covariance
+        /*  
+        imu_msg.orientation_covariance[0] = 0.0001; // Variance for x-axis
+        imu_msg.orientation_covariance[1] = 0.0;
+        imu_msg.orientation_covariance[2] = 0.0;
+        imu_msg.orientation_covariance[3] = 0.0;
+        imu_msg.orientation_covariance[4] = 0.0001; // Variance for y-axis
+        imu_msg.orientation_covariance[5] = 0.0;
+        imu_msg.orientation_covariance[6] = 0.0;
+        imu_msg.orientation_covariance[7] = 0.0;
+        imu_msg.orientation_covariance[8] = 0.0001; // Variance for z-axis
+        */
 
-  #ifdef LEFT_WHEEL
-  // Initialize IMU data publisher for left wheel
-  RCCHECK(rclc_publisher_init_best_effort(
-      &imu_publisher,
-      &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
-      "/imu/data_raw"
-  ));
+        // Set covariance for angular velocity
+        imu_msg.angular_velocity_covariance[0] = 0.0025;  // Variance for x-axis
+        imu_msg.angular_velocity_covariance[1] = 0.0;
+        imu_msg.angular_velocity_covariance[2] = 0.0;
+        imu_msg.angular_velocity_covariance[3] = 0.0;
+        imu_msg.angular_velocity_covariance[4] = 0.0025;  // Variance for y-axis
+        imu_msg.angular_velocity_covariance[5] = 0.0;
+        imu_msg.angular_velocity_covariance[6] = 0.0;
+        imu_msg.angular_velocity_covariance[7] = 0.0;
+        imu_msg.angular_velocity_covariance[8] = 0.0025;  // Variance for z-axis
 
-  imu_msg.orientation_covariance[0] = -1; // 姿勢を使用する場合はコメントアウト
+        // Set covariance for linear acceleration
+        imu_msg.linear_acceleration_covariance[0] = 0.0004;  // Variance for x-axis
+        imu_msg.linear_acceleration_covariance[1] = 0.0;
+        imu_msg.linear_acceleration_covariance[2] = 0.0;
+        imu_msg.linear_acceleration_covariance[3] = 0.0;
+        imu_msg.linear_acceleration_covariance[4] = 0.0004;  // Variance for y-axis
+        imu_msg.linear_acceleration_covariance[5] = 0.0;
+        imu_msg.linear_acceleration_covariance[6] = 0.0;
+        imu_msg.linear_acceleration_covariance[7] = 0.0;
+        imu_msg.linear_acceleration_covariance[8] = 0.0004;  // Variance for z-axis
 
-  // 姿勢の共分散行列設定
-/*  imu_msg.orientation_covariance[0] = 0.0001; // x軸の分散
-  imu_msg.orientation_covariance[1] = 0.0;
-  imu_msg.orientation_covariance[2] = 0.0;
-  imu_msg.orientation_covariance[3] = 0.0;
-  imu_msg.orientation_covariance[4] = 0.0001; // y軸の分散
-  imu_msg.orientation_covariance[5] = 0.0;
-  imu_msg.orientation_covariance[6] = 0.0;
-  imu_msg.orientation_covariance[7] = 0.0;
-  imu_msg.orientation_covariance[8] = 0.0001; // z軸の分散
-*/
-  // 角速度の共分散行列設定
-  imu_msg.angular_velocity_covariance[0] = 0.0025;  // x軸の分散
-  imu_msg.angular_velocity_covariance[1] = 0.0;
-  imu_msg.angular_velocity_covariance[2] = 0.0;
-  imu_msg.angular_velocity_covariance[3] = 0.0;
-  imu_msg.angular_velocity_covariance[4] = 0.0025;  // y軸の分散
-  imu_msg.angular_velocity_covariance[5] = 0.0;
-  imu_msg.angular_velocity_covariance[6] = 0.0;
-  imu_msg.angular_velocity_covariance[7] = 0.0;
-  imu_msg.angular_velocity_covariance[8] = 0.0025;  // z軸の分散
+        // Allocate buffer for IMU Frame ID and set it
+        static char imu_frame_id_buffer[256];
+        imu_msg.header.frame_id.data = imu_frame_id_buffer; // Point to buffer
 
-  // 線形加速度の共分散行列設定
-  imu_msg.linear_acceleration_covariance[0] = 0.0004;  // x軸の分散
-  imu_msg.linear_acceleration_covariance[1] = 0.0;
-  imu_msg.linear_acceleration_covariance[2] = 0.0;
-  imu_msg.linear_acceleration_covariance[3] = 0.0;
-  imu_msg.linear_acceleration_covariance[4] = 0.0004;  // y軸の分散
-  imu_msg.linear_acceleration_covariance[5] = 0.0;
-  imu_msg.linear_acceleration_covariance[6] = 0.0;
-  imu_msg.linear_acceleration_covariance[7] = 0.0;
-  imu_msg.linear_acceleration_covariance[8] = 0.0004;  // z軸の分散
+        const char* imu_frame_id = "imu";
+        strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
+        imu_msg.header.frame_id.size = strlen(imu_frame_id);
+    #endif
 
-  static char imu_frame_id_buffer[256];
-  imu_msg.header.frame_id.data = imu_frame_id_buffer; // ポインタをバッファに設定
+    // Initialize Timer for periodic callbacks
+    const unsigned int timer_timeout = 20;  // 20ms interval
+    RCCHECK(rclc_timer_init_default(
+        &timer,
+        &support,
+        RCL_MS_TO_NS(timer_timeout),
+        timer_callback
+    ));
 
-  const char* imu_frame_id = "imu";
-  strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
-  imu_msg.header.frame_id.size = strlen(imu_frame_id);
+    // Initialize the Executor with the number of callbacks
+    int callback_size = 4;	// Number of callbacks to handle
+    executor = rclc_executor_get_zero_initialized_executor();
+    RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
 
-  #endif
+    // Add Communication Check Subscriber to Executor
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &com_check_subscriber,
+        &com_req_msg,
+        &com_check_callback,
+        ON_NEW_DATA
+    ));
 
-  // タイマーの初期化
-  const unsigned int timer_timeout = 20;  // 20ms
-  RCCHECK(rclc_timer_init_default(
-      &timer,
-      &support,
-      RCL_MS_TO_NS(timer_timeout),
-      timer_callback
-  ));
+    // Add Reboot Service to Executor
+    RCCHECK(rclc_executor_add_service(
+        &executor,
+        &reboot_service,
+        &req,
+        &res,
+        &reboot_callback
+    ));
 
-	int callback_size = 4;	// コールバックを行う数
-	executor = rclc_executor_get_zero_initialized_executor();
-  RCCHECK(rclc_executor_init(&executor, &support.context, callback_size, &allocator));
-  RCCHECK(rclc_executor_add_subscription(&executor, &com_check_subscriber, &com_req_msg, &com_check_callback, ON_NEW_DATA));
-  RCCHECK(rclc_executor_add_service(&executor, &reboot_service, &req, &res, &reboot_callback));
-  RCCHECK(rclc_executor_add_subscription(&executor, &cmd_vel_subscriber, &msg_sub, &subscription_callback, ON_NEW_DATA));
-  RCCHECK(rclc_executor_add_timer(&executor, &timer));
+    // Add cmd_vel Subscriber to Executor
+    RCCHECK(rclc_executor_add_subscription(
+        &executor,
+        &cmd_vel_subscriber,
+        &msg_sub,
+        &subscription_callback,
+        ON_NEW_DATA
+    ));
 
+    // Add Timer to Executor
+    RCCHECK(rclc_executor_add_timer(
+        &executor,
+        &timer
+    ));
 }
 
 void reboot_callback(const void * request, void * response) {
