@@ -20,26 +20,40 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
-rcl_service_t reboot_service;
-rcl_subscription_t cmd_vel_subscriber;
-rcl_subscription_t com_check_subscriber;
-geometry_msgs__msg__Twist msg_sub;
-geometry_msgs__msg__TwistStamped vel_msg;
-sensor_msgs__msg__Imu imu_msg;
-std_msgs__msg__Int32 com_req_msg;
-std_msgs__msg__Int32 com_res_msg;
-rcl_publisher_t vel_publisher;
-rcl_publisher_t imu_publisher;
-rcl_publisher_t com_check_publisher;
-std_srvs__srv__Trigger_Request req;
-std_srvs__srv__Trigger_Response res;
-rclc_executor_t executor;
-rclc_support_t support;
-rcl_allocator_t allocator;
-rcl_node_t node;
-rcl_timer_t timer;
-rcl_time_point_value_t current_time;
-rcl_clock_t ros_clock;
+// Communication Check: Publisher and Subscriber for integrity check messages
+rcl_subscription_t com_check_subscriber;  // Subscriber for communication check requests
+rcl_publisher_t com_check_publisher;      // Publisher for communication check responses
+std_msgs__msg__Int32 com_req_msg;          // Message for incoming communication requests
+std_msgs__msg__Int32 com_res_msg;          // Message for outgoing communication responses
+
+// Reboot service: Handles requests to reboot the system safely
+rcl_service_t reboot_service;              // Service to manage reboot requests
+std_srvs__srv__Trigger_Request req;        // Reboot request message
+std_srvs__srv__Trigger_Response res;       // Reboot response message
+
+// cmd_vel subscriber: Subscribes to velocity commands for the robot
+rcl_subscription_t cmd_vel_subscriber;     // Subscriber for velocity commands
+geometry_msgs__msg__Twist msg_sub;         // Message type for subscribing to velocity commands
+
+// Velocity publisher: Publishes velocity commands as stamped messages
+rcl_publisher_t vel_publisher;             // Publisher for velocity data
+geometry_msgs__msg__TwistStamped vel_msg;  // Stamped message for velocity data
+
+// IMU publisher: Publishes IMU data to other components in the system
+rcl_publisher_t imu_publisher;             // Publisher for IMU data
+sensor_msgs__msg__Imu imu_msg;             // IMU message type
+
+// Timer callback: Manages timing for regular updates in the system
+rcl_timer_t timer;                         // Timer for periodic updates
+rcl_time_point_value_t current_time;       // Stores the current time point
+rcl_clock_t ros_clock;                     // Clock to manage system time
+
+// microROS node and executor: Core components for managing ROS 2 nodes and callbacks
+rclc_executor_t executor;                  // Executor for managing callbacks
+rclc_support_t support;                    // Support structure for the node
+rcl_allocator_t allocator;                 // Allocator for the node's resources
+rcl_node_t node;                           // The node itself
+
 
 void setupMicroROS() {
 	set_microros_transports();
