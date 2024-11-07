@@ -31,7 +31,7 @@
 #include <std_srvs/srv/trigger.h>
 
 // Constants for system-wide parameters
-#define INTERVAL 20 // Timer callback interval in milliseconds
+#define TIMER_INTERVAL 20 // Timer callback interval in milliseconds
 #define GRAVITY 9.81f // Earth's gravity in m/s^2
 #define DEG2RAD 0.0174533f // Degrees to radians conversion factor
 
