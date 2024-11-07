@@ -16,9 +16,12 @@
 #include <M5Stack.h>
 #include "SerialManager.h"
 
+// Logs the received velocity data to the serial console.
+// This function is specifically used for debugging purposes, 
+// allowing for quick verification of the motion command values being received.
 void logReceivedData(const geometry_msgs__msg__Twist *msg) {
-  Serial.print("Received linear.x: ");
-  Serial.println(msg->linear.x);
-  Serial.print("Received angular.z: ");
-  Serial.println(msg->angular.z);
+    Serial.print("Received linear.x: ");
+    Serial.println(msg->linear.x);
+    Serial.print("Received angular.z: ");
+    Serial.println(msg->angular.z);
 }
