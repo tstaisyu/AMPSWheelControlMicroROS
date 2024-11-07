@@ -30,53 +30,59 @@
 #include <std_msgs/msg/string.h>
 #include <std_srvs/srv/trigger.h>
 
-#define INTERVAL 20 // Interval for timer callback in milliseconds
+// Constants for system-wide parameters
+#define INTERVAL 20 // Timer callback interval in milliseconds
+#define GRAVITY 9.81f // Earth's gravity in m/s^2
+#define DEG2RAD 0.0174533f // Degrees to radians conversion factor
 
-#define GRAVITY 9.81f
-#define DEG2RAD 0.0174533f
+// ROS 2 Communication Interfaces
+extern rcl_subscription_t com_check_subscriber;  // Handles incoming communication check requests
+extern rcl_publisher_t com_check_publisher;      // Responds to communication check requests
+extern std_msgs__msg__Int32 com_req_msg;         // Stores incoming communication request data
+extern std_msgs__msg__Int32 com_res_msg;         // Stores outgoing communication response data
 
-// Communication Check: Publisher and Subscriber for integrity check messages
-extern rcl_subscription_t com_check_subscriber;  // Subscriber for communication check requests
-extern rcl_publisher_t com_check_publisher;      // Publisher for communication check responses
-extern std_msgs__msg__Int32 com_req_msg;          // Message for incoming communication requests
-extern std_msgs__msg__Int32 com_res_msg;          // Message for outgoing communication responses
+extern rcl_service_t reboot_service;             // Service for processing reboot requests
+extern std_srvs__srv__Trigger_Request request;   // Stores incoming reboot request data
+extern std_srvs__srv__Trigger_Response response; // Stores outgoing reboot response data
 
-// Reboot service: Handles requests to reboot the system safely
-extern rcl_service_t reboot_service;              // Service to manage reboot requests
-extern std_srvs__srv__Trigger_Request request;        // Reboot request message
-extern std_srvs__srv__Trigger_Response response;       // Reboot response message
+extern rcl_subscription_t cmd_vel_subscriber;    // Receives velocity commands for the robot
+extern geometry_msgs__msg__Twist msg_sub;        // Stores subscribed velocity command data
 
-// cmd_vel subscriber: Subscribes to velocity commands for the robot
-extern rcl_subscription_t cmd_vel_subscriber;     // Subscriber for velocity commands
-extern geometry_msgs__msg__Twist msg_sub;         // Message type for subscribing to velocity commands
+extern rcl_publisher_t vel_publisher;            // Publishes velocity data as stamped messages
+extern geometry_msgs__msg__TwistStamped vel_msg; // Stores velocity data to be published
 
-// Velocity publisher: Publishes velocity commands as stamped messages
-extern rcl_publisher_t vel_publisher;             // Publisher for velocity data
-extern geometry_msgs__msg__TwistStamped vel_msg;  // Stamped message for velocity data
+extern rcl_publisher_t imu_publisher;            // Publishes IMU data for system components
+extern sensor_msgs__msg__Imu imu_msg;            // Stores IMU data to be published
 
-// IMU publisher: Publishes IMU data to other components in the system
-extern rcl_publisher_t imu_publisher;             // Publisher for IMU data
-extern sensor_msgs__msg__Imu imu_msg;             // IMU message type
+// Timing and Scheduling Interfaces
+extern rcl_timer_t timer;                        // Manages timing for regular system updates
+extern rcl_time_point_value_t current_time;      // Stores the current system time point
+extern rcl_clock_t ros_clock;                    // Provides ROS system time
 
-// Timer callback: Manages timing for regular updates in the system
-extern rcl_timer_t timer;                         // Timer for periodic updates
-extern rcl_time_point_value_t current_time;       // Stores the current time point
-extern rcl_clock_t ros_clock;                     // Clock to manage system time
-
-// microROS node and executor: Core components for managing ROS 2 nodes and callbacks
-extern rclc_executor_t executor;                  // Executor for managing callbacks
-extern rclc_support_t support;                    // Support structure for the node
-extern rcl_allocator_t allocator;                 // Allocator for the node's resources
-extern rcl_node_t node;                           // The node itself
+extern rclc_executor_t executor;                 // Manages callback execution for ROS nodes
+extern rclc_support_t support;                   // Provides context support for the ROS node
+extern rcl_allocator_t allocator;                // Allocates memory for node operations
+extern rcl_node_t node;                          // Represents the micro-ROS node
 
 //rcl_init_options_t init_options; // Humble
 //size_t domain_id = 117;
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if ((temp_rc != RCL_RET_OK)) {Serial.println("Error in " #fn); return;}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
+// Error handling macros for ROS 2 operations
+#define RCCHECK(fn) { \
+    rcl_ret_t temp_rc = fn; \
+    if ((temp_rc != RCL_RET_OK)) { \
+        Serial.println("Error in " #fn); \
+        return; \
+    } \
+}
 
+#define RCSOFTCHECK(fn) { \
+    rcl_ret_t temp_rc = fn; \
+    if ((temp_rc != RCL_RET_OK)) {} \
+}
+
+// Function prototypes for ROS 2 initialization and operations
 void setupMicroROS();
-// Prototype declaration for each initialization function
 void initializePublishers(rcl_node_t *node);
 void initializeSubscribers(rcl_node_t *node);
 void initializeServices(rcl_node_t *node);
@@ -85,6 +91,7 @@ void initializeIMU(rcl_node_t *node);
 #endif
 void initializeTimer(rcl_timer_t *timer, rclc_support_t *support);
 void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_allocator_t *allocator);
+
 void com_check_callback(const void * msgin);
 void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
@@ -93,4 +100,4 @@ void updateIMUData();
 void updateWheelSpeed();
 void handleExecutorSpin();
 
-#endif
+#endif // ROS_COMMUNICATIONS_H

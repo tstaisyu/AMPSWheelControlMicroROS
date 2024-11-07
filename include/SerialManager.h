@@ -18,6 +18,9 @@
 
 #include <geometry_msgs/msg/twist.h>
 
+// Logs the received Twist message data to a serial output.
+// This function is typically used for debugging purposes to monitor
+// the values received from motion commands.
 void logReceivedData(const geometry_msgs__msg__Twist *msg);
 
-#endif
+#endif // SERIAL_MANAGER_H

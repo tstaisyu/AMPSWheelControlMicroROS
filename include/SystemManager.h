@@ -18,9 +18,13 @@
 
 #include "IMUManager.h"
 
+// Global instance of IMUManager for managing IMU sensors
 extern IMUManager imuManager;
 
+// Initializes M5Stack hardware configurations
 void setupM5stack();
+
+// Checks for data timeout and restarts the device if necessary
 void checkDataTimeout();
 
-#endif
+#endif // SETUP_M5STACK_H

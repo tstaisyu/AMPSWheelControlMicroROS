@@ -19,69 +19,64 @@
 #include <M5Stack.h>
 #include <HardwareSerial.h>
 
+// Class to manage motor commands through UART
 class MotorController {
 private:
-    HardwareSerial& motorSerial;
+    HardwareSerial& motorSerial; // Reference to the hardware serial port used by the motor controller
 
 public:
-    MotorController(HardwareSerial& serial)
-    : motorSerial(serial) {}
+    // Constructor to initialize the motor controller with a specific serial port
+    MotorController(HardwareSerial& serial) : motorSerial(serial) {}
 
+    // Sends a command to the motor controller
     void sendCommand(byte motorID, uint16_t address, byte command, uint32_t data);
 };
 
+// Structure to store velocity commands with linear and angular components
 struct VelocityCommand {
-  float linear_x;
-  float angular_z;
+    float linear_x;  // Linear velocity in meters per second
+    float angular_z; // Angular velocity in radians per second
 };
 
+// Global variables for system state tracking
+extern HardwareSerial motorSerial;           // Global instance of hardware serial for motor communications
+extern MotorController motorController;      // Global instance of the motor controller
 
-extern HardwareSerial motorSerial;
-extern MotorController motorController;
+extern double x_position;                    // Current x position of the robot
+extern double y_position;                    // Current y position of the robot
+extern double theta;                         // Current orientation of the robot in radians
 
-// 現在の位置と姿勢
-extern double x_position;
-extern double y_position;
-extern double theta; // ロボットの向き（ラジアン）
+extern bool initial_data_received;           // Flag to check if initial data has been received
+extern unsigned long last_receive_time;      // Timestamp of the last received data
 
-extern bool initial_data_received; // データ受信の有無を追跡
-extern unsigned long last_receive_time; // 最後にデータを受信した時刻
+extern VelocityCommand currentCommand;       // Current velocity command being processed
 
-extern VelocityCommand currentCommand;
+// Function prototypes for UART and motor initialization and command transmission
+void initializeUART();                                   // Initializes UART for communication
+void initMotor(HardwareSerial& serial, byte motorID);    // Initializes motor controller settings
+void sendMotorCommands(float linearVelocity, float angularVelocity);  // Sends velocity commands to the motor
+uint32_t velocityToDEC(float velocityMPS);                // Converts velocity from m/s to a DEC value
+void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID); // Sends velocity in DEC format
 
-//extern unsigned long lastReadTime;
+float readSpeedData(HardwareSerial& serial, byte motorID);    // Reads speed data from motor
+uint32_t reverseBytes(uint32_t value);                       // Utility function to reverse byte order
+float calculateVelocityMPS(int32_t dec);                     // Calculates velocity in m/s from DEC value
 
+// Constants and macros for motor control parameters
+constexpr byte MOTOR_ID = 0x01;  // Default motor ID
 
+// Pin configuration for UART
+constexpr int RX_PIN = 16;  // RX pin for UART
+constexpr int TX_PIN = 17;  // TX pin for UART
 
-
-void initializeUART();
-void initMotor(HardwareSerial& serial, byte motorID);
-void sendMotorCommands(float linearVelocity, float angularVelocity);
-uint32_t velocityToDEC(float velocityMPS);
-void sendVelocityDEC(HardwareSerial& serial, int velocityDec, byte motorID);
-
-float readSpeedData(HardwareSerial& serial, byte motorID);
-uint32_t reverseBytes(uint32_t value);
-float calculateVelocityMPS(int32_t dec);
-
-/*byte calculateChecksum(byte *data, int len);
-*/
-
-
-constexpr byte MOTOR_ID = 0x01;
-
-// UARTピン設定
-constexpr int RX_PIN = 16; // UARTのRXピン
-constexpr int TX_PIN = 17; // UARTのTXピン
-
-// オブジェクトアドレス
+// Object addresses for various motor control functions
 constexpr uint16_t OPERATION_MODE_ADDRESS = 0x7017;
 constexpr uint16_t EMERGENCY_STOP_ADDRESS = 0x701F;
 constexpr uint16_t CONTROL_WORD_ADDRESS = 0x7019;
 constexpr uint16_t TARGET_VELOCITY_DEC_ADDRESS = 0x70B2;
 constexpr uint16_t ACTUAL_SPEED_DEC_ADDRESS = 0x7077;
 
-// コマンド定義
+// Command definitions for motor control
 constexpr byte MOTOR_SETUP_COMMAND = 0x51;
 constexpr byte MOTOR_ENABLE_COMMAND = 0x52;
 constexpr byte VEL_SEND_COMMAND = 0x54;
@@ -89,33 +84,27 @@ constexpr byte READ_COMMAND = 0x52;
 constexpr byte READ_DEC_COMMAND = 0xA0;
 constexpr byte READ_DEC_SUCCESS = 0xA4;
 
-// デフォルト値
+// Default values for motor operations
 constexpr uint32_t OPERATION_MODE_SPEED_CONTROL = 0x00000003;
 constexpr uint32_t DISABLE_EMERGENCY_STOP = 0x00000000;
 constexpr uint32_t ENABLE_MOTOR = 0x0000000F;
 constexpr uint32_t NO_DATA = 0x00000000;
 
-// 通信設定
-constexpr int BAUD_RATE = 115200;
-constexpr byte ERROR_BYTE = 0x00; // エラーバイトは必要に応じて調整
+// Communication settings
+constexpr int BAUD_RATE = 115200;  // UART baud rate
+constexpr byte ERROR_BYTE = 0x00;  // Default error byte, adjust as needed
 
-// ディレイ設定
-constexpr uint16_t COMMAND_DELAY = 100; // コマンド間のディレイ
-constexpr uint32_t SEND_INTERVAL = 1000; // 速度コマンドの送信間隔 (ミリ秒)
+// Timing settings for motor commands
+constexpr uint16_t COMMAND_DELAY = 100;           // Delay between commands in milliseconds
+constexpr uint32_t SEND_INTERVAL = 1000;          // Interval for sending speed commands in milliseconds
 
-// モーター仕様
-constexpr float WHEEL_RADIUS = 0.055; // 車輪の半径 (メートル)
-constexpr float WHEEL_DISTANCE = 0.202; // ホイール間の距離 (メートル)
+// Motor specifications
+constexpr float WHEEL_RADIUS = 0.055;            // Radius of the wheel in meters
+constexpr float WHEEL_DISTANCE = 0.202;          // Distance between wheels in meters
 
-#define RECEIVE_TIMEOUT 5000 // タイムアウト値（ミリ秒）
+#define RECEIVE_TIMEOUT 5000 // Timeout value in milliseconds for receiving data
+#define SCALE_FACTOR 1000    // Factor to scale values for integer calculations
 
-#define SCALE_FACTOR 1000 // 1000倍して整数演算を行う
+const float WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * PI / 60.0 * SCALE_FACTOR; // Calculates wheel circumference
 
-const float WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * PI / 60.0 * SCALE_FACTOR; // 60で割るのもここで行う
-/*
-BluetoothSerial SerialBT;
-*/
-
-//const unsigned int readInterval = 40; 
-
-#endif
+#endif // MOTOR_CONTROLLER_H

@@ -18,6 +18,9 @@
 
 #include <geometry_msgs/msg/twist.h>
 
+// Updates the device's display with the current velocity data
+// This function takes a Twist message, which includes linear and angular velocity components,
+// and displays these values on the device's screen.
 void updateDisplay(const geometry_msgs__msg__Twist* msg);
 
-#endif
+#endif // DISPLAY_MANAGER_H

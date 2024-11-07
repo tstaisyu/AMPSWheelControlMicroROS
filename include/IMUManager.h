@@ -18,26 +18,30 @@
 
 #include <M5Stack.h>
 
+// Manages interactions with the IMU sensors on the M5Stack, including initialization,
+// data updates, and sensor calibration. It provides both raw and calibrated data access
+// methods, and applies filtering to the sensor data to improve accuracy.
 class IMUManager {
 public:
-    IMUManager();
-    void initialize();
-    bool update();
+    IMUManager();  // Constructor
+    void initialize();  // Initializes the IMU sensors
+    bool update();  // Updates sensor data, returns true if new data is available
 
-    // Ahrsを使用しない場合
+    // Retrieves calibrated acceleration and gyroscope data.
+    // This function assumes that calibration offsets are already applied.
     void getCalibratedData(float &ax, float &ay, float &az, float &gx, float &gy, float &gz);
 
 private:
+    float ax, ay, az; // Accelerometer data
+    float gx, gy, gz; // Gyroscope data
+    float accOffset[3], gyroOffset[3]; // Calibration offsets for accelerometer and gyroscope
 
-    float ax, ay, az; // 加速度センサのデータ
-    float gx, gy, gz; // ジャイロセンサのデータ
-    float accOffset[3], gyroOffset[3]; // キャリブレーションオフセット
+    float lpf_beta; // Coefficient for the low-pass filter
+    float accX_filtered, accY_filtered, accZ_filtered; // Low-pass filtered accelerometer data
+    float gyroX_filtered, gyroY_filtered, gyroZ_filtered; // Low-pass filtered gyroscope data
 
-    float lpf_beta; // フィルタの係数
-    float accX_filtered, accY_filtered, accZ_filtered, gyroX_filtered, gyroY_filtered, gyroZ_filtered; // フィルタリングされたデータ
-
-    void calibrateSensors(); // センサのキャリブレーションを行う
-    void applyLowPassFilter(); // ローパスフィルタを適用する
+    void calibrateSensors(); // Calibrates the sensors to adjust for drift and bias
+    void applyLowPassFilter(); // Applies a low-pass filter to smooth out sensor data
 };
 
 #endif // IMU_MANAGER_H
