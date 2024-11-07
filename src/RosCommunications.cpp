@@ -181,6 +181,7 @@ void initializeServices(rcl_node_t *node) {
     ));
 }
 
+#ifdef LEFT_WHEEL
 // Initialize IMU Publisher and IMU Message for Left Wheel
 void initializeIMU(rcl_node_t *node) {
     // Initialize IMU data publisher for left wheel
@@ -237,10 +238,11 @@ void initializeIMU(rcl_node_t *node) {
     strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
     imu_msg.header.frame_id.size = strlen(imu_frame_id);
 }
+#endif
 
 // Initialize Timer for periodic callbacks
 void initializeTimer(rcl_timer_t *timer, rclc_support_t *support) {
-    const unsigned int timer_timeout = INTERVAL;
+    const unsigned int timer_timeout = TIMER_INTERVAL;
     RCCHECK(rclc_timer_init_default(
         timer,
         support,
