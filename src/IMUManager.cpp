@@ -15,39 +15,38 @@
 
 #include "IMUManager.h"
 
-const float sampleFreq = 256.0f;  // サンプルレート（Hz）
+const float sampleFreq = 256.0f;  // Sampling rate in Hz
 
 IMUManager::IMUManager() : lpf_beta(0.1), accX_filtered(0.0), gyroX_filtered(0.0) {
-    // 初期化処理
+    // Initial setup for IMUManager with default low-pass filter coefficients
 }
 
 void IMUManager::initialize() {
-    M5.IMU.Init();
-    calibrateSensors();
+    M5.IMU.Init();  // Initialize the IMU hardware
+    calibrateSensors();  // Calibrate sensors to remove initial bias
 }
 
 bool IMUManager::update() {
-    
-    // IMUからデータを読み取る
+    // Fetch the latest data from the IMU
     M5.IMU.getAccelData(&ax, &ay, &az);
     M5.IMU.getGyroData(&gx, &gy, &gz);
 
-    // オフセット適用
+    // Apply the calibration offsets to raw data
     ax -= accOffset[0];
     ay -= accOffset[1];
-    az -= accOffset[2]; // 重力加速度を考慮
+    az -= accOffset[2]; // Consider gravity acceleration
 
     gx -= gyroOffset[0];
     gy -= gyroOffset[1];
     gz -= gyroOffset[2];
 
-    applyLowPassFilter();
+    applyLowPassFilter();  // Apply a low-pass filter to smooth the sensor data
   
-    return true;
+    return true;  // Always returns true - consider adding error handling
 }
 
 void IMUManager::applyLowPassFilter() {
-    // 加速度とジャイロスコープのデータをフィルタリング
+    // Low-pass filter the accelerometer and gyroscope data to reduce noise
     accX_filtered = accX_filtered + lpf_beta * (ax - accX_filtered);
     accY_filtered = accY_filtered + lpf_beta * (ay - accY_filtered);
     accZ_filtered = accZ_filtered + lpf_beta * (az - accZ_filtered);    
@@ -56,8 +55,8 @@ void IMUManager::applyLowPassFilter() {
     gyroZ_filtered = gyroZ_filtered + lpf_beta * (gz - gyroZ_filtered);
 }
 
-// Ahrsを使用しない場合
 void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, float &gY, float &gZ) {
+    // Return the filtered and calibrated sensor data
     aX = accX_filtered;
     aY = accY_filtered;
     aZ = accZ_filtered;
@@ -67,9 +66,10 @@ void IMUManager::getCalibratedData(float &aX, float &aY, float &aZ, float &gX, f
 }
 
 void IMUManager::calibrateSensors() {
+    // Average several readings for calibration
     float sumAx = 0, sumAy = 0, sumAz = 0;
     float sumGx = 0, sumGy = 0, sumGz = 0;
-    const int samples = 500;
+    const int samples = 500;  // Number of samples for averaging
     for (int i = 0; i < samples; i++) {
         M5.IMU.getAccelData(&ax, &ay, &az);
         M5.IMU.getGyroData(&gx, &gy, &gz);
@@ -79,12 +79,13 @@ void IMUManager::calibrateSensors() {
         sumGx += gx;
         sumGy += gy;
         sumGz += gz;
-        delay(2);
+        delay(2);  // Small delay between samples
     }
 
+    // Calculate and store the offsets from average values
     accOffset[0] = sumAx / samples;
     accOffset[1] = sumAy / samples;
-    accOffset[2] = (sumAz / samples) - 1.0; // M5スティックが水平であると仮定
+    accOffset[2] = (sumAz / samples) - 1.0; // Assuming IMU unit is level
     gyroOffset[0] = sumGx / samples;
     gyroOffset[1] = sumGy / samples;
     gyroOffset[2] = sumGz / samples;
