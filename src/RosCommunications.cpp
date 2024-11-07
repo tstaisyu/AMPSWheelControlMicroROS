@@ -43,8 +43,11 @@
 
 // Constants for ROS 2 frame IDs
 #define IMU_FRAME_ID "imu"
-#define VELOCITY_FRAME_ID_LEFT "l_w"
-#define VELOCITY_FRAME_ID_RIGHT "r_w"
+#ifdef LEFT_WHEEL
+    #define VELOCITY_FRAME_ID "l_w"
+#elif defined(RIGHT_WHEEL)
+    #define VELOCITY_FRAME_ID "r_w"
+#endif
 
 // Communication Check: Publisher and Subscriber for integrity check messages
 rcl_subscription_t com_check_subscriber;  // Subscriber for communication check requests
@@ -147,11 +150,8 @@ void initializePublishers(rcl_node_t *node) {
     static char vel_frame_id_buffer[256]; // Ensure sufficient size
     vel_msg.header.frame_id.data = vel_frame_id_buffer; // Point to buffer
 
-    #ifdef LEFT_WHEEL
-        const char* vel_frame_id = VELOCITY_FRAME_ID_LEFT;
-    #elif defined(RIGHT_WHEEL)
-        const char* vel_frame_id = VELOCITY_FRAME_ID_RIGHT;
-    #endif
+    const char* vel_frame_id = VELOCITY_FRAME_ID;
+
     strncpy(vel_msg.header.frame_id.data, vel_frame_id, sizeof(vel_msg.header.frame_id.data));
     vel_msg.header.frame_id.size = strlen(vel_frame_id);
 }
