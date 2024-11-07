@@ -20,34 +20,29 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
-// Define ROS2 node names based on the wheel type
+// Define wheel-specific suffix based on the wheel type
 #ifdef LEFT_WHEEL
-    #define NODE_NAME "/left_wheel/micro_ros_node"
+    #define WHEEL_SUFFIX "left_wheel"
 #elif defined(RIGHT_WHEEL)
-    #define NODE_NAME "/right_wheel/micro_ros_node"
+    #define WHEEL_SUFFIX "right_wheel"
 #endif
 
+// Define ROS2 node names based on the wheel type
+#define NODE_NAME "/" WHEEL_SUFFIX "/micro_ros_node"
+
 // Constants for ROS 2 topic and service names
-#ifdef LEFT_WHEEL
-    #define REBOOT_SERVICE_NAME "/left_wheel/reboot_service"
-    #define CONNECTION_RESPONSE_TOPIC "left_wheel/connection_response"
-    #define VELOCITY_TOPIC "/left_wheel/velocity"
-#elif defined(RIGHT_WHEEL)
-    #define REBOOT_SERVICE_NAME "/right_wheel/reboot_service"
-    #define CONNECTION_RESPONSE_TOPIC "right_wheel/connection_response"
-    #define VELOCITY_TOPIC "/right_wheel/velocity"
-#endif
+#define REBOOT_SERVICE_NAME "/" WHEEL_SUFFIX "/reboot_service"
+#define CONNECTION_RESPONSE_TOPIC WHEEL_SUFFIX "/connection_response"
+#define VELOCITY_TOPIC "/" WHEEL_SUFFIX "/velocity"
+
+// Common topics not specific to any wheel
 #define CONNECTION_CHECK_TOPIC "connection_check_request"
 #define CMD_VEL_TOPIC "/cmd_vel"
 #define IMU_DATA_TOPIC "/imu/data_raw"
 
 // Constants for ROS 2 frame IDs
 #define IMU_FRAME_ID "imu"
-#ifdef LEFT_WHEEL
-    #define VELOCITY_FRAME_ID "l_w"
-#elif defined(RIGHT_WHEEL)
-    #define VELOCITY_FRAME_ID "r_w"
-#endif
+#define VELOCITY_FRAME_ID WHEEL_SUFFIX "_v"
 
 // Communication Check: Publisher and Subscriber for integrity check messages
 rcl_subscription_t com_check_subscriber;  // Subscriber for communication check requests
@@ -186,7 +181,6 @@ void initializeServices(rcl_node_t *node) {
     ));
 }
 
-#ifdef LEFT_WHEEL
 // Initialize IMU Publisher and IMU Message for Left Wheel
 void initializeIMU(rcl_node_t *node) {
     // Initialize IMU data publisher for left wheel
@@ -243,7 +237,6 @@ void initializeIMU(rcl_node_t *node) {
     strncpy(imu_msg.header.frame_id.data, imu_frame_id, sizeof(imu_msg.header.frame_id.data));
     imu_msg.header.frame_id.size = strlen(imu_frame_id);
 }
-#endif
 
 // Initialize Timer for periodic callbacks
 void initializeTimer(rcl_timer_t *timer, rclc_support_t *support) {
