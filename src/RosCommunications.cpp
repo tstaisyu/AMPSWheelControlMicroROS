@@ -20,20 +20,25 @@
 #include "SystemManager.h"
 #include "IMUManager.h"
 
-// Constants for ROS 2 node names
+// Define ROS2 node names based on the wheel type
 #ifdef LEFT_WHEEL
-    #define NODE_NAME_LEFT "left_wheel_node"
+    #define NODE_NAME "/left_wheel/micro_ros_node"
 #elif defined(RIGHT_WHEEL)
-    #define NODE_NAME_RIGHT "right_wheel_node"
+    #define NODE_NAME "/right_wheel/micro_ros_node"
 #endif
 
 // Constants for ROS 2 topic and service names
+#ifdef LEFT_WHEEL
+    #define REBOOT_SERVICE_NAME "/left_wheel/reboot_service"
+    #define CONNECTION_RESPONSE_TOPIC "left_wheel/connection_response"
+    #define VELOCITY_TOPIC "/left_wheel/velocity"
+#elif defined(RIGHT_WHEEL)
+    #define REBOOT_SERVICE_NAME "/right_wheel/reboot_service"
+    #define CONNECTION_RESPONSE_TOPIC "right_wheel/connection_response"
+    #define VELOCITY_TOPIC "/right_wheel/velocity"
+#endif
+#define CONNECTION_CHECK_TOPIC "connection_check_request"
 #define CMD_VEL_TOPIC "/cmd_vel"
-#define REBOOT_SERVICE_NAME "/reboot_service"
-#define CONNECTION_RESPONSE_TOPIC "connection_response"
-#define CONNECTION_CHECK_TOPIC "connection_check"
-#define VELOCITY_TOPIC_LEFT "/left_vel"
-#define VELOCITY_TOPIC_RIGHT "/right_vel"
 #define IMU_DATA_TOPIC "/imu/data_raw"
 
 // Constants for ROS 2 frame IDs
@@ -99,11 +104,7 @@ void setupMicroROS() {
     //RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator)); // 前のrclc_support_initは削除する
     
     // Initialize the ROS node based on the wheel type (left or right)
-    #ifdef LEFT_WHEEL
-        RCCHECK(rclc_node_init_default(&node, NODE_NAME_LEFT, "", &support));
-    #elif defined(RIGHT_WHEEL)
-        RCCHECK(rclc_node_init_default(&node, NODE_NAME_RIGHT, "", &support));
-    #endif
+    RCCHECK(rclc_node_init_default(&node, NODE_NAME, "", &support));
 
     // Call initialization functions of the ROS executor and the components for the node
     initializePublishers(&node);
@@ -127,21 +128,12 @@ void initializePublishers(rcl_node_t *node) {
     ));
 
     // Initialize Velocity Publisher based on wheel type
-    #ifdef LEFT_WHEEL
-        RCCHECK(rclc_publisher_init_best_effort(
-            &vel_publisher,
-            node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-            VELOCITY_TOPIC_LEFT
-        ));
-    #elif defined(RIGHT_WHEEL)
-        RCCHECK(rclc_publisher_init_best_effort(
-            &vel_publisher,
-            node,
-            ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
-            VELOCITY_TOPIC_RIGHT
-        ));
-    #endif
+    RCCHECK(rclc_publisher_init_best_effort(
+        &vel_publisher,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, TwistStamped),
+        VELOCITY_TOPIC
+    ));
 
     // Initialize Velocity Message with default values
     vel_msg.twist.linear.x = 0.0;
