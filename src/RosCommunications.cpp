@@ -21,8 +21,11 @@
 #include "IMUManager.h"
 
 // Constants for ROS 2 node names
-#define NODE_NAME_LEFT "left_wheel_node"
-#define NODE_NAME_RIGHT "right_wheel_node"
+#ifdef LEFT_WHEEL
+    #define NODE_NAME_LEFT "left_wheel_node"
+#elif defined(RIGHT_WHEEL)
+    #define NODE_NAME_RIGHT "right_wheel_node"
+#endif
 
 // Constants for ROS 2 topic and service names
 #define CMD_VEL_TOPIC "/cmd_vel"
@@ -72,7 +75,7 @@ rclc_support_t support;                    // Support structure for the node
 rcl_allocator_t allocator;                 // Allocator for the node's resources
 rcl_node_t node;                           // The node itself
 
-
+// Initialize microROS components and setup the ROS 2 node
 void setupMicroROS() {
     // Initialize micro-ROS transports
     set_microros_transports();
@@ -97,9 +100,9 @@ void setupMicroROS() {
     
     // Initialize the ROS node based on the wheel type (left or right)
     #ifdef LEFT_WHEEL
-    RCCHECK(rclc_node_init_default(&node, NODE_NAME_LEFT, "", &support));
+        RCCHECK(rclc_node_init_default(&node, NODE_NAME_LEFT, "", &support));
     #elif defined(RIGHT_WHEEL)
-    RCCHECK(rclc_node_init_default(&node, NODE_NAME_RIGHT, "", &support));
+        RCCHECK(rclc_node_init_default(&node, NODE_NAME_RIGHT, "", &support));
     #endif
 
     // Call initialization functions of the ROS executor and the components for the node
