@@ -29,6 +29,7 @@
 
 ## ディレクトリ構成
 
+```plaintext
 ├── include
 │   ├── DisplayManager.h
 │   ├── IMUManager.h
@@ -48,6 +49,7 @@
 ├── platformio.ini
 ├── README.md
 └── LICENSE
+```
 
 - `include`: ヘッダーファイルが含まれるディレクトリ
 - `src`: 各モジュールのソースコードを含むディレクトリ
@@ -174,7 +176,3 @@ platformio run --target upload
 - [microROS公式ドキュメント](https://micro.ros.org/)
 - [PlatformIO公式サイト](https://platformio.org/)
 - [M5Stack公式ドキュメント](https://docs.m5stack.com/)
-    
----
-    
-このREADMEは、プロジェクトの全体像と各モジュールの役割を明確にし、開発者が効率的にプロジェクトに取り組めるように設計されています。適切なコメントと詳細な説明を通じて、コードの可読性とメンテナンス性を向上させています。
