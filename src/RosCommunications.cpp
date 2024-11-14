@@ -28,7 +28,7 @@
 #endif
 
 // Define ROS2 node names based on the wheel type
-#define NODE_NAME "/" WHEEL_SUFFIX "/micro_ros_node"
+#define NODE_NAME WHEEL_SUFFIX "_micro_ros_node"
 
 // Constants for ROS 2 topic and service names
 #define REBOOT_SERVICE_NAME "/" WHEEL_SUFFIX "/reboot_service"
