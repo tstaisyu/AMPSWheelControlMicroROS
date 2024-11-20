@@ -209,26 +209,26 @@ void initializeIMU(rcl_node_t *node) {
     */
 
     // Set covariance for angular velocity
-    imu_msg.angular_velocity_covariance[0] = 0.001;  // Variance for x-axis
+    imu_msg.angular_velocity_covariance[0] = 0.05;  // Variance for x-axis
     imu_msg.angular_velocity_covariance[1] = 0.0;
     imu_msg.angular_velocity_covariance[2] = 0.0;
     imu_msg.angular_velocity_covariance[3] = 0.0;
-    imu_msg.angular_velocity_covariance[4] = 0.001;  // Variance for y-axis
+    imu_msg.angular_velocity_covariance[4] = 0.05;  // Variance for y-axis
     imu_msg.angular_velocity_covariance[5] = 0.0;
     imu_msg.angular_velocity_covariance[6] = 0.0;
     imu_msg.angular_velocity_covariance[7] = 0.0;
-    imu_msg.angular_velocity_covariance[8] = 0.001;  // Variance for z-axis
+    imu_msg.angular_velocity_covariance[8] = 0.05;  // Variance for z-axis
 
     // Set covariance for linear acceleration
-    imu_msg.linear_acceleration_covariance[0] = 0.01;  // Variance for x-axis
+    imu_msg.linear_acceleration_covariance[0] = 0.2;  // Variance for x-axis
     imu_msg.linear_acceleration_covariance[1] = 0.0;
     imu_msg.linear_acceleration_covariance[2] = 0.0;
     imu_msg.linear_acceleration_covariance[3] = 0.0;
-    imu_msg.linear_acceleration_covariance[4] = 0.01;  // Variance for y-axis
+    imu_msg.linear_acceleration_covariance[4] = 0.2;  // Variance for y-axis
     imu_msg.linear_acceleration_covariance[5] = 0.0;
     imu_msg.linear_acceleration_covariance[6] = 0.0;
     imu_msg.linear_acceleration_covariance[7] = 0.0;
-    imu_msg.linear_acceleration_covariance[8] = 0.01;  // Variance for z-axis
+    imu_msg.linear_acceleration_covariance[8] = 0.2;  // Variance for z-axis
 
     // Allocate buffer for IMU Frame ID and set it
     static char imu_frame_id_buffer[256];
