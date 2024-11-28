@@ -33,10 +33,12 @@
 // Constants for ROS 2 topic and service names
 #define REBOOT_SERVICE_NAME "/" WHEEL_SUFFIX "/reboot_service"
 #define CONNECTION_RESPONSE_TOPIC WHEEL_SUFFIX "/connection_response"
+#define HEARTBEAT_RESPONSE_TOPIC "/" WHEEL_SUFFIX "/heartbeat_response"
 #define VELOCITY_TOPIC "/" WHEEL_SUFFIX "/velocity"
 
 // Common topics not specific to any wheel
 #define CONNECTION_CHECK_TOPIC "connection_check_request"
+#define HEARTBEAT_TOPIC "heartbeat"
 #define CMD_VEL_TOPIC "/cmd_vel"
 #define IMU_DATA_TOPIC "/imu/data_raw"
 
@@ -66,6 +68,11 @@ geometry_msgs__msg__TwistStamped vel_msg;  // Stamped message for velocity data
 // IMU publisher: Publishes IMU data to other components in the system
 rcl_publisher_t imu_publisher;             // Publisher for IMU data
 sensor_msgs__msg__Imu imu_msg;             // IMU message type
+
+// Heartbeat publisher and subscriber: Monitors system health and connectivity
+rcl_publisher_t heartbeat_publisher;       // Publisher for heartbeat messages
+rcl_subscription_t heartbeat_subscriber;   // Subscriber for heartbeat messages
+std_msgs__msg__Int32 heartbeat_msg;        // Heartbeat message type
 
 // Timer callback: Manages timing for regular updates in the system
 rcl_timer_t timer;                         // Timer for periodic updates
@@ -125,6 +132,14 @@ void initializePublishers(rcl_node_t *node) {
         CONNECTION_RESPONSE_TOPIC
     ));
 
+    // Initialize Heartbeat Publisher
+    RCCHECK(rclc_publisher_init_best_effort(
+        &heartbeat_publisher,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+        HEARTBEAT_RESPONSE_TOPIC
+    ));
+
     // Initialize Velocity Publisher based on wheel type
     RCCHECK(rclc_publisher_init_best_effort(
         &vel_publisher,
@@ -159,6 +174,14 @@ void initializeSubscribers(rcl_node_t *node) {
         node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
         CONNECTION_CHECK_TOPIC
+    ));
+
+    // Initialize Heartbeat Subscriber
+    RCCHECK(rclc_subscription_init_best_effort(
+        &heartbeat_subscriber,
+        node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+        HEARTBEAT_TOPIC
     ));
 
     // Initialize cmd_vel Subscriber for velocity commands 
@@ -266,6 +289,15 @@ void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_
         ON_NEW_DATA
     ));
 
+    // Add Heartbeat Subscriber to Executor
+    RCCHECK(rclc_executor_add_subscription(
+        executor,
+        &heartbeat_subscriber,
+        &heartbeat_msg,
+        &heartbeat_callback,
+        ON_NEW_DATA
+    ));
+
     // Add Reboot Service to Executor
     RCCHECK(rclc_executor_add_service(
         executor,
@@ -343,6 +375,25 @@ void com_check_callback(const void * msgin) {
 
     // Confirm the publication of the response
     Serial.println("Published connection response: connection_established");
+}
+
+// Callback function for handling received heartbeat messages
+void heartbeat_callback(const void * msgin)
+{
+    const std_msgs__msg__Int32 * msg = (const std_msgs__msg__Int32 *)msgin;
+    printf("Received heartbeat signal: %d\n", msg->data);
+
+    // Prepare the response message
+    heartbeat_msg.data = 1;  // Set the data to indicate the system is active
+
+    // Attempt to publish the heartbeat response
+    rcl_ret_t ret = rcl_publish(&heartbeat_publisher, &heartbeat_msg, NULL);
+    if (ret != RCL_RET_OK) {
+        printf("Failed to publish heartbeat response: %s\n", rcl_get_error_string().str);
+        rcl_reset_error();
+    } else {
+        printf("Published heartbeat response: %d\n", heartbeat_msg.data);
+    }
 }
 
 // Callback function for handling received Twist messages
