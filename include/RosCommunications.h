@@ -54,6 +54,10 @@ extern geometry_msgs__msg__TwistStamped vel_msg; // Stores velocity data to be p
 extern rcl_publisher_t imu_publisher;            // Publishes IMU data for system components
 extern sensor_msgs__msg__Imu imu_msg;            // Stores IMU data to be published
 
+extern rcl_publisher_t heartbeat_publisher;     // Publishes heartbeat messages for system monitoring
+extern rcl_subscription_t heartbeat_subscriber; // Receives heartbeat messages for system monitoring
+extern std_msgs__msg__Int32 heartbeat_msg;     // Stores heartbeat data to be published
+
 // Timing and Scheduling Interfaces
 extern rcl_timer_t timer;                        // Manages timing for regular system updates
 extern rcl_time_point_value_t current_time;      // Stores the current system time point
@@ -93,6 +97,7 @@ void initializeTimer(rcl_timer_t *timer, rclc_support_t *support);
 void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_allocator_t *allocator);
 
 void com_check_callback(const void * msgin);
+void heartbeat_callback(const void * msgin);
 void reboot_callback(const void * request, void * response);
 void subscription_callback(const void * msgin);
 void timer_callback(rcl_timer_t *timer, int64_t last_call_time);
