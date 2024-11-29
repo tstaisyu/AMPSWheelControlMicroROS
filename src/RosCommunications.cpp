@@ -276,7 +276,7 @@ void initializeTimer(rcl_timer_t *timer, rclc_support_t *support) {
 
 // Initialize the Executor with the number of callbacks
 void initializeExecutor(rclc_executor_t *executor, rclc_support_t *support, rcl_allocator_t *allocator) {
-    int callback_size = 4;	// Number of callbacks to handle
+    int callback_size = 5;	// Number of callbacks to handle
     *executor = rclc_executor_get_zero_initialized_executor();
     RCCHECK(rclc_executor_init(executor, &support->context, callback_size, allocator));
 
